@@ -211,7 +211,7 @@ class Game {
       if (!this.gameOver) {
         this.createRock();
       }
-    }, 1000);
+    }, 6000);
     setInterval(() => {
       if (!this.gameOver) {
         this.createLife();
@@ -224,6 +224,7 @@ class Game {
     }, 700);
     this.draw();
     this.assets.road.move();
+   
   }
 }
 

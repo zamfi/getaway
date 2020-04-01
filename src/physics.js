@@ -10,6 +10,7 @@ class Physics {
     this.dUp = 0;
     this.dx = this.dx.bind(this);
     this.dy = this.dy.bind(this);
+    this.speed = 2;
   }
 
   dx() {
