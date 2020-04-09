@@ -10,6 +10,8 @@ class Road {
     this.sprite = new Sprite(roadImg, 1262, 502);
     this.score = 0;
     this.gameOver = false;
+    this.box = null;
+    this.marked = null;
   }
 
   move() {

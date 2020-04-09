@@ -10,6 +10,7 @@ import Cash from './cash.js';
 import Car from './car.js';
 import assets from './assets.js';
 
+var ctr = 0;
 class Game {
   constructor(canvas, ctx) {
     this.canvas = canvas;
@@ -67,7 +68,7 @@ class Game {
   }
 
   drawAsset(asset) {
-    const { physics, sprite } = asset;
+    const { physics, sprite, box, marked } = asset;
 
     // redraw road
     if (asset instanceof Road && asset.physics.y >= 0) {
@@ -84,6 +85,9 @@ class Game {
     if (asset instanceof Obstacle && asset.physics.y >= 0) { 
       if (asset.physics.y > canvas.height) {
         this.ctx.drawImage(sprite.img, 0, 0, sprite.width, sprite.height, asset.physics.x, asset.physics.y - 900, sprite.width, sprite.height);
+        if(marked){
+          this.ctx.drawImage(box.img, 0, 0, box.width, box.height, asset.physics.x, asset.physics.y - 900, box.width, box.height);
+        }
       }
     }
 
@@ -96,6 +100,9 @@ class Game {
       // draw everything else
       this.ctx.drawImage(sprite.img, 0, 0, sprite.width, sprite.height,
         physics.x, physics.y, sprite.width, sprite.height);
+        if(marked){
+          this.ctx.drawImage(box.img, 0, 0, box.width, box.height, physics.x, physics.y, box.width, box.height);
+        }
     }
 
 
@@ -191,10 +198,10 @@ class Game {
     ));
   };
 
-  createCash() {
+  createCash(bool_marked) {
     this.cash.push(new Cash(new Physics(
       Math.floor(Math.random() * 310) + 80,
-      -20)
+      -20),bool_marked
     ));
   };
 
@@ -207,21 +214,23 @@ class Game {
     this.gameOver = false;
     document.getElementById("welcome").style.display="none";
     this.assets.car.resetLife();
+ 
     setInterval(() => {
       if (!this.gameOver) {
-        this.createRock();
+        if(ctr%3 == 0)
+        {
+          this.createRock();
+        }
+        else if(ctr%3==1){
+          this.createCash(ctr%2 == 0);
+        }
+        else if(ctr%3==2){
+          this.createLife();
+        }
+        ctr++;
       }
-    }, 6000);
-    setInterval(() => {
-      if (!this.gameOver) {
-        this.createLife();
-      }
-    }, 4500);
-    setInterval(() => {
-      if (!this.gameOver) {
-        this.createCash();
-      }
-    }, 700);
+    }, 5000);
+
     this.draw();
     this.assets.road.move();
    

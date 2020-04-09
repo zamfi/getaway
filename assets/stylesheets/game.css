@@ -1,5 +1,5 @@
 html {
-  background-image: url('../images/wasteland_city.png');
+  background-image: url('../images/IMG_4860.jpg');
   background-size: cover;
 }
 
@@ -77,7 +77,7 @@ html {
 }
 
 .instructions {
-  height: 702px;
+  height: 290px;
   width: 470px;
   background-color: rgba(255,255,255, 0.6);
   margin-bottom: 2px;

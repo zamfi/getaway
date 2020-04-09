@@ -9,6 +9,8 @@ class Car {
     this.physics = physics;
     this.sprite = new Sprite(carImg, 150, 70);
     this.life = 3;
+    this.box = null;
+    this.marked = null;
   }
 
   hitObstacle() {
