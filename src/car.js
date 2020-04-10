@@ -26,19 +26,19 @@ class Car {
   }
 
   makeGreen() {
-    const score = document.getElementById("lives");
-    score.classList.toggle("lives-value--green");
-    setTimeout(() => {
-      score.classList.toggle("lives-value--green");
-    }, 200);
+    // const score = document.getElementById("lives");
+    // score.classList.toggle("lives-value--green");
+    // setTimeout(() => {
+    //   score.classList.toggle("lives-value--green");
+    // }, 200);
   }
 
   makeRed() {
-    const score = document.getElementById("lives");
-    score.classList.toggle("lives-value--red");
-    setTimeout(() => {
-      score.classList.toggle("lives-value--red");
-    }, 200);
+    // const score = document.getElementById("lives");
+    // score.classList.toggle("lives-value--red");
+    // setTimeout(() => {
+    //   score.classList.toggle("lives-value--red");
+    // }, 200);
   }
 
   draw(ctx) {

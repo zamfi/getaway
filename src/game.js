@@ -26,21 +26,21 @@ class Game {
   // hit detection for objects
   static checkCollision(car, object, array, assets) {
     if (object instanceof Obstacle) {
-      if (Util.collide(car, object)) {
+      if (Util.collide_with_scale(car, object)) {
         car.hitObstacle();
         car.makeRed();
         array.splice(array.indexOf(object), 1);
       }
     }
     if (object instanceof Life) {
-      if (Util.collide(car, object)) {
+      if (Util.collide_with_scale(car, object)) {
         car.getLife();
         car.makeGreen();
         array.splice(array.indexOf(object), 1);
       }
     }
     if (object instanceof Cash) {
-      if (Util.collide(car, object)) {
+      if (Util.collide_with_scale(car, object)) {
         assets.road.score += 100;
         assets.road.makeGreen();
         array.splice(array.indexOf(object), 1);
@@ -84,9 +84,10 @@ class Game {
     // draw more rocks
     if (asset instanceof Obstacle && asset.physics.y >= 0) { 
       if (asset.physics.y > canvas.height) {
-        this.ctx.drawImage(sprite.img, 0, 0, sprite.width, sprite.height, asset.physics.x, asset.physics.y - 900, sprite.width, sprite.height);
+        this.ctx.drawImage(sprite.img, 0, 0, sprite.width, sprite.height, asset.physics.x, asset.physics.y - 900, sprite.width*sprite.width_scale, sprite.height*sprite.height_scale);
         if(marked){
-          this.ctx.drawImage(box.img, 0, 0, box.width, box.height, asset.physics.x, asset.physics.y - 900, box.width, box.height);
+          //this.ctx.drawImage(box.img, 0, 0, box.width, box.height, asset.physics.x, asset.physics.y - 900, box.width*sprite.width_scale, box.height*sprite.height_scale);
+          this.ctx.drawImage(box.img, 0, 0, box.width, box.height, asset.physics.x+0.5*(sprite.width*sprite.width_scale-box.width*sprite.width_scale), asset.physics.y - 900 + 0.5*(sprite.height*sprite.height_scale - box.height*box.height_scale), box.width*box.width_scale, box.height*box.height_scale);
         }
       }
     }
@@ -99,9 +100,10 @@ class Game {
     } else {
       // draw everything else
       this.ctx.drawImage(sprite.img, 0, 0, sprite.width, sprite.height,
-        physics.x, physics.y, sprite.width, sprite.height);
+        physics.x, physics.y, sprite.width*sprite.width_scale, sprite.height*sprite.height_scale);
         if(marked){
-          this.ctx.drawImage(box.img, 0, 0, box.width, box.height, physics.x, physics.y, box.width, box.height);
+          //this.ctx.drawImage(box.img, 0, 0, box.width, box.height, physics.x, physics.y, box.width*sprite.width_scale, box.height*sprite.height_scale);
+          this.ctx.drawImage(box.img, 0, 0, box.width, box.height, physics.x+0.5*(sprite.width*sprite.width_scale-box.width*box.width_scale), asset.physics.y + 0.5*(sprite.height*sprite.height_scale - box.height*box.height_scale), box.width*box.width_scale, box.height*box.height_scale);
         }
     }
 
@@ -164,8 +166,8 @@ class Game {
   
         // render score and lives
         this.assets.road.addScore();
-        document.getElementById("score").innerHTML = `${this.assets.road.score}`;
-        document.getElementById("lives").innerHTML = `${this.assets.car.life}`;
+        // document.getElementById("score").innerHTML = `${this.assets.road.score}`;
+        // document.getElementById("lives").innerHTML = `${this.assets.car.life}`;
         this.end();
       }
   
@@ -225,7 +227,7 @@ class Game {
           this.createCash(ctr%2 == 0);
         }
         else if(ctr%3==2){
-          this.createLife();
+          this.createLife(ctr%2 == 1);
         }
         ctr++;
       }
@@ -235,6 +237,8 @@ class Game {
     this.assets.road.move();
    
   }
+
+  
 }
 
 export default Game;

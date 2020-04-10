@@ -4,9 +4,9 @@ html {
 }
 
 .controls {
-  background-image: url('../images/controls.png');
-  height: 100px;
-  width: 304px;
+  /* background-image: url('../images/controls.png'); */
+  height: 1px;
+  width: 1px;
   background-size: 100%;
   background-repeat: no-repeat;
   margin-top: 16px;
@@ -77,17 +77,17 @@ html {
 }
 
 .instructions {
-  height: 290px;
+  height: 350px;
   width: 470px;
   background-color: rgba(255,255,255, 0.6);
   margin-bottom: 2px;
 }
 
 .title {
-  font-size: 88px;
+  font-size: 32px;
   text-align: center;
-  font-style: oblique;
-  margin-top: 15px;
+  font-style: normal;
+  margin-top: 5px;
   font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
 }
 
@@ -190,14 +190,14 @@ html {
 }
 
 .github {
-  background-image: url('../images/github.png');
+  /* background-image: url('../images/github.png'); */
   background-repeat: no-repeat;
   background-size: cover;
   height: 50px;
   width: 50px;}
 
 .linkedin {
-  background-image: url('../images/linkedin.png');
+  /* background-image: url('../images/linkedin.png'); */
   background-repeat: no-repeat;
   background-size: cover;
   height: 50px;

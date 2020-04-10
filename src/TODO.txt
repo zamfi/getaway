@@ -1,7 +1,9 @@
-1. Slow down everything
-2. Slow down, and space out spawned entities
+#1. Slow down everything
+#2. Slow down, and space out spawned entities
 3. Abstract representations  (choose from random mix bag) for entities 
 4. Right pane
-    4.1 Removes the scores, arrow images
+    #4.1 Removes the scores, arrow images
     4.2 Mapping entities 
-    4.3 Change the road image
+    #4.3 Change the road image
+5. Timed Mark function
+6. One thing marked at the time 

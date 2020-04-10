@@ -8,8 +8,8 @@ redBox.src = "./assets/images/redbox.png";
 class Obstacle {
   constructor(physics) {
     this.physics = physics;
-    this.sprite = new Sprite(rockImg, 30, 35);
-    this.box = new Sprite(redBox,40,50)
+    this.sprite = new Sprite(rockImg, 30, 35,1.5,1.5);
+    this.box = new Sprite(redBox,40,50,1.5,1.5)
     this.marked = true;
   }
 

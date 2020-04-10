@@ -9,9 +9,9 @@ redBox.src = "./assets/images/redbox.png";
 class Life {
   constructor(physics) {
     this.physics = physics;
-    this.sprite = new Sprite(lifeImg, 30, 31);
-    this.box = new Sprite(redBox,35,36)
-    this.marked = false;
+    this.sprite = new Sprite(lifeImg, 30, 31,1.5,1.5);
+    this.box = new Sprite(redBox,40,50,1.5,1.5)
+    this.marked = true;
   }
 
   move() {

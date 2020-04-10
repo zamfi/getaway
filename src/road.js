@@ -27,11 +27,11 @@ class Road {
   }
 
   makeGreen() {
-    const score = document.getElementById("score");
-    score.classList.toggle("score-value--mod");
-    setTimeout(() => {
-      score.classList.toggle("score-value--mod");
-    }, 300);
+    // const score = document.getElementById("score");
+    // score.classList.toggle("score-value--mod");
+    // setTimeout(() => {
+    //   score.classList.toggle("score-value--mod");
+    // }, 300);
   }
 
   stop() {
