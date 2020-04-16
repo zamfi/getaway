@@ -3,15 +3,24 @@ import Sprite from "./sprite";
 
 const rockImg = new Image();
 const redBox = new Image();
-rockImg.src = "./assets/images/rock.png";
+//rockImg.src = "./assets/images/rock.png";
 redBox.src = "./assets/images/redbox.png";
 class Obstacle {
-  constructor(physics) {
+  constructor(physics,imgSrc,marked,distance=-1) {
     this.physics = physics;
-    this.sprite = new Sprite(rockImg, 30, 35,1.5,1.5);
-    this.box = new Sprite(redBox,40,50,1.5,1.5)
-    this.marked = true;
+    rockImg.src = imgSrc;
+    this.sprite = new Sprite(rockImg, 50, 50,1.0,1.0);
+    this.box = new Sprite(redBox,40,50,1.0,1.3)
+    this.marked = marked;
+    this.distance = distance;
+   
   }
+
+  updatesprite(imgSrc) {
+    rockImg.src = imgSrc;
+    this.sprite = new Sprite(rockImg, 50, 50, 1.0, 1.0);
+  }
+  
 
   move() {
     this.physics.dDown = this.physics.speed;

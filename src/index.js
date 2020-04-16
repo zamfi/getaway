@@ -1,6 +1,7 @@
 import Game from "./game.js";
 // import assets from './assets.js';
 import setupControlListeners from './car_controls.js';
+import BumbleBee from "./bumblebee.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const canvas = document.getElementById("canvas");
@@ -20,7 +21,10 @@ document.addEventListener("DOMContentLoaded", () => {
     setupControlListeners(game);
     
     game.start();
+    
+    //let bumblebee = new BumbleBee(game);
     // write custom code here
+    //setInterval(bumblebee.randomizesprite, 500);
 
     
   })

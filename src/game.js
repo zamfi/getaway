@@ -9,7 +9,9 @@ import Physics from './physics.js';
 import Cash from './cash.js';
 import Car from './car.js';
 import assets from './assets.js';
-
+const lifeImgFolder = "./assets/images/life/";
+const obstacleImgFolder = "./assets/images/obstacle/";
+const moneyImgFolder = "./assets/images/money/";
 var ctr = 0;
 class Game {
   constructor(canvas, ctx) {
@@ -20,7 +22,23 @@ class Game {
     this.life = [];
     this.cash = [];
     this.assets = assets();
-    this.animate = null;    
+    this.animate = null;
+    this.lifeImgSrc = "./assets/images/life/life (1).png";
+    this.rockImgSrc = "./assets/images/obstacle/obstacle (1).png";
+    this.moneyImgSrc = "./assets/images/money/money (1).png";
+    this.lifeImgLists = [];
+    this.moneyImgLists = [];
+    this.obstacleImgLists = [];
+    this.numImgs = 16;
+    
+    for (var i = 0; i < this.numImgs; i++) {
+      this.lifeImgLists.push(lifeImgFolder + "life (" + (i + 1).toString() + ").png");
+      this.moneyImgLists.push(moneyImgFolder + "money (" + (i + 1).toString() + ").png");
+      this.obstacleImgLists.push(obstacleImgFolder + "obstacle (" + (i + 1).toString() + ").png");
+    }
+    document.getElementById("obstacle").style["background-image"] = "url(\'" + this.rockImgSrc + "\')";
+    document.getElementById("money").style["background-image"] = "url(\'" + this.moneyImgSrc + "\')";
+    document.getElementById("life").style["background-image"] = "url(\'" + this.lifeImgSrc + "\')";
   }
 
   // hit detection for objects
@@ -68,7 +86,7 @@ class Game {
   }
 
   drawAsset(asset) {
-    const { physics, sprite, box, marked } = asset;
+    const { physics, sprite, box, marked, distance } = asset;
 
     // redraw road
     if (asset instanceof Road && asset.physics.y >= 0) {
@@ -84,11 +102,13 @@ class Game {
     // draw more rocks
     if (asset instanceof Obstacle && asset.physics.y >= 0) { 
       if (asset.physics.y > canvas.height) {
-        this.ctx.drawImage(sprite.img, 0, 0, sprite.width, sprite.height, asset.physics.x, asset.physics.y - 900, sprite.width*sprite.width_scale, sprite.height*sprite.height_scale);
-        if(marked){
-          //this.ctx.drawImage(box.img, 0, 0, box.width, box.height, asset.physics.x, asset.physics.y - 900, box.width*sprite.width_scale, box.height*sprite.height_scale);
-          this.ctx.drawImage(box.img, 0, 0, box.width, box.height, asset.physics.x+0.5*(sprite.width*sprite.width_scale-box.width*sprite.width_scale), asset.physics.y - 900 + 0.5*(sprite.height*sprite.height_scale - box.height*box.height_scale), box.width*box.width_scale, box.height*box.height_scale);
-        }
+        this.ctx.drawImage(sprite.img, 0, 0, sprite.width, sprite.height, asset.physics.x, asset.physics.y - 900, sprite.width * sprite.width_scale, sprite.height * sprite.height_scale);
+        console.log("Drawing rock");
+        
+        // if(marked){
+        //   //this.ctx.drawImage(box.img, 0, 0, box.width, box.height, asset.physics.x, asset.physics.y - 900, box.width*sprite.width_scale, box.height*sprite.height_scale);
+        //   this.ctx.drawImage(box.img, 0, 0, box.width, box.height, asset.physics.x+0.5*(sprite.width*sprite.width_scale-box.width*sprite.width_scale), asset.physics.y - 900 + 0.5*(sprite.height*sprite.height_scale - box.height*box.height_scale), box.width*box.width_scale, box.height*box.height_scale);
+        // }
       }
     }
 
@@ -100,8 +120,9 @@ class Game {
     } else {
       // draw everything else
       this.ctx.drawImage(sprite.img, 0, 0, sprite.width, sprite.height,
-        physics.x, physics.y, sprite.width*sprite.width_scale, sprite.height*sprite.height_scale);
-        if(marked){
+        physics.x, physics.y, sprite.width * sprite.width_scale, sprite.height * sprite.height_scale);
+      if (marked &&  physics.y>distance*this.canvas.height) {
+       
           //this.ctx.drawImage(box.img, 0, 0, box.width, box.height, physics.x, physics.y, box.width*sprite.width_scale, box.height*sprite.height_scale);
           this.ctx.drawImage(box.img, 0, 0, box.width, box.height, physics.x+0.5*(sprite.width*sprite.width_scale-box.width*box.width_scale), asset.physics.y + 0.5*(sprite.height*sprite.height_scale - box.height*box.height_scale), box.width*box.width_scale, box.height*box.height_scale);
         }
@@ -117,6 +138,29 @@ class Game {
         physics.updatePosition();
       }
     }
+  }
+
+  randomizesprite() {
+    var rnd1 = Math.floor(Math.random() * Math.floor(this.numImgs));
+    var rnd2 = Math.floor(Math.random() * Math.floor(this.numImgs));
+    var rnd3 = Math.floor(Math.random() * Math.floor(this.numImgs));
+    this.lifeImgSrc = this.lifeImgLists[rnd1];
+    this.moneyImgSrc = this.moneyImgLists[rnd2];
+    this.rockImgSrc = this.obstacleImgLists[rnd3];
+    //console.log(this.lifeImgSrc);
+    this.rocks.forEach(el => {
+      el.updatesprite(this.rockImgSrc);
+    })
+    this.life.forEach(el => {
+      el.updatesprite(this.lifeImgSrc);
+    })
+    this.cash.forEach(el => {
+      el.updatesprite(this.moneyImgSrc);
+    })
+    //document.getElementById("obstacle").style["background-image"] = "url(+\'" +"../images/life/life (1).png"+"\')";
+    document.getElementById("obstacle").style["background-image"] = "url(\'" + this.rockImgSrc + "\')";
+    document.getElementById("money").style["background-image"] = "url(\'" + this.moneyImgSrc + "\')";
+    document.getElementById("life").style["background-image"] = "url(\'" + this.lifeImgSrc + "\')";
   }
 
   draw() {
@@ -186,24 +230,24 @@ class Game {
     }
   }
 
-  createRock() {
+  createRock(bool_marked) {
     this.rocks.push(new Obstacle(new Physics(
       Math.floor(Math.random() * 310) + 80,
-      -20)
+      -20),this.rockImgSrc,true,0.3
     ));
   };
 
-  createLife() {
+  createLife(bool_marked) {
     this.life.push(new Life(new Physics(
       Math.floor(Math.random() * 310) + 80,
-      -20)
+      -20),this.lifeImgSrc,true,0.3
     ));
   };
 
   createCash(bool_marked) {
     this.cash.push(new Cash(new Physics(
       Math.floor(Math.random() * 310) + 80,
-      -20),bool_marked
+      -20),this.moneyImgSrc,true,0.3
     ));
   };
 
@@ -221,7 +265,7 @@ class Game {
       if (!this.gameOver) {
         if(ctr%3 == 0)
         {
-          this.createRock();
+          this.createRock(ctr%5 == 1);
         }
         else if(ctr%3==1){
           this.createCash(ctr%2 == 0);
@@ -232,6 +276,10 @@ class Game {
         ctr++;
       }
     }, 5000);
+
+    setInterval(() => {
+      this.randomizesprite();
+    }, 7000);
 
     this.draw();
     this.assets.road.move();
