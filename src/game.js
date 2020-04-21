@@ -13,6 +13,15 @@ const lifeImgFolder = "./assets/images/life/";
 const obstacleImgFolder = "./assets/images/obstacle/";
 const moneyImgFolder = "./assets/images/money/";
 var ctr = 0;
+
+function indexOfSmallest(a) {
+ var lowest = 0;
+ for (var i = 1; i < a.length; i++) {
+  if (a[i] < a[lowest]) lowest = i;
+ }
+ return lowest;
+}
+
 class Game {
   constructor(canvas, ctx) {
     this.canvas = canvas;
@@ -31,8 +40,8 @@ class Game {
     this.moneyImgLists = [];
     this.obstacleImgLists = [];
     this.numImgs = 16;
-    
-    
+
+
     for (var i = 0; i < this.numImgs; i++) {
       this.lifeImgLists.push(lifeImgFolder + "life (" + (i + 1).toString() + ").png");
       this.moneyImgLists.push(moneyImgFolder + "money (" + (i + 1).toString() + ").png");
@@ -103,7 +112,7 @@ class Game {
 
   // checks if item passed canvas height to delete
   static checkCanvas(object, array, boxed) {
-    
+
     if (object instanceof Life) {
       console.log("Before removing");
       console.log(boxed);
@@ -159,11 +168,11 @@ class Game {
     }
 
     // draw more rocks
-    if (asset instanceof Obstacle && asset.physics.y >= 0) { 
+    if (asset instanceof Obstacle && asset.physics.y >= 0) {
       if (asset.physics.y > canvas.height) {
         this.ctx.drawImage(sprite.img, 0, 0, sprite.width, sprite.height, asset.physics.x, asset.physics.y - 900, sprite.width * sprite.width_scale, sprite.height * sprite.height_scale);
         console.log("Drawing rock");
-        
+
         // if(marked){
         //   //this.ctx.drawImage(box.img, 0, 0, box.width, box.height, asset.physics.x, asset.physics.y - 900, box.width*sprite.width_scale, box.height*sprite.height_scale);
         //   this.ctx.drawImage(box.img, 0, 0, box.width, box.height, asset.physics.x+0.5*(sprite.width*sprite.width_scale-box.width*sprite.width_scale), asset.physics.y - 900 + 0.5*(sprite.height*sprite.height_scale - box.height*box.height_scale), box.width*box.width_scale, box.height*box.height_scale);
@@ -172,7 +181,7 @@ class Game {
     }
 
     if (asset instanceof Car) {
-      // this.ctx.drawImage(sprite.img, 
+      // this.ctx.drawImage(sprite.img,
       //   0, 0, sprite.width, sprite.height,
       //   physics.x, physics.y, sprite.width, sprite.height);
       asset.draw(this.ctx);
@@ -181,22 +190,22 @@ class Game {
       this.ctx.drawImage(sprite.img, 0, 0, sprite.width, sprite.height,
         physics.x, physics.y, sprite.width * sprite.width_scale, sprite.height * sprite.height_scale);
       if (marked &&  physics.y>distance*this.canvas.height) {
-       
+
           //this.ctx.drawImage(box.img, 0, 0, box.width, box.height, physics.x, physics.y, box.width*sprite.width_scale, box.height*sprite.height_scale);
         this.ctx.drawImage(box.img, 0, 0, box.width, box.height, physics.x + 0.5 * (sprite.width * sprite.width_scale - box.width * box.width_scale), asset.physics.y + 0.5 * (sprite.height * sprite.height_scale - box.height * box.height_scale), box.width * box.width_scale, box.height * box.height_scale);
-        
-        
+
+
         if (this.boxed.indexOf(asset) == -1) {
           console.log("While adding");
           this.boxed.push(asset);
-          console.log(this.boxed);  
+          console.log(this.boxed);
         }
-        
+
         }
     }
 
 
-    
+
     // update position of all objects
     if (this.assets.car.life != 0) {
       if (asset instanceof Car) {
@@ -236,52 +245,52 @@ class Game {
         const assets = Object.values(this.assets);
         this.animate = requestAnimationFrame(animate);
         this.ctx.clearRect(0, 0, canvas.width, canvas.height);
-  
+
         for (let i = 0; i < assets.length; i++) {
           this.drawAsset(assets[i]);
         }
-        
+
         // check collision for rocks
         this.rocks.forEach(el => {
           Game.checkCollision(this.assets.car, el, this.rocks);
           Game.checkCanvas(el, this.rocks, this.boxed);
         })
-  
+
         // check collision for life
 
         this.life.forEach(el => {
           Game.checkCollision(this.assets.car, el, this.life);
           Game.checkCanvas(el, this.life,this.boxed);
         })
-  
+
         // check collision for life
         this.cash.forEach(el => {
           Game.checkCollision(this.assets.car, el, this.cash, this.assets);
           Game.checkCanvas(el, this.cash,this.boxed);
         })
-        
+
         this.life.forEach(el => {
           this.drawAsset(el);
           el.move();
-        });     
-  
+        });
+
         this.rocks.forEach(el => {
           this.drawAsset(el);
           el.move();
         })
-  
+
         this.cash.forEach(el => {
           this.drawAsset(el);
           el.move();
         })
-  
+
         // render score and lives
         this.assets.road.addScore();
         // document.getElementById("score").innerHTML = `${this.assets.road.score}`;
         // document.getElementById("lives").innerHTML = `${this.assets.car.life}`;
         this.end();
       }
-  
+
       animate();
     }
   }
@@ -323,11 +332,65 @@ class Game {
     window.cancelAnimationFrame(this.animate);
   }
 
+  releaseControls() {
+    // set controls to zero to mimic  key release (0-order hold)
+    //console.info("Controls: Release")
+    this.assets.car.physics.dLeft=0;
+    this.assets.car.physics.dRight=0;
+    this.assets.car.physics.dUp=0;
+    this.assets.car.physics.dDown=0;
+  }
+
+  moveLeft(u) {
+  //move car left by u
+  this.assets.car.physics.dLeft=u;
+  }
+
+  moveRight(u) {
+  //move car left by u
+  this.assets.car.physics.dRight=u;
+  }
+
+  closestObject() {
+    //returns type of object closest to car (in front)
+    // 0: cash, 1: rock, 2: life, 3: no spawned object ahead
+
+    var y_cash;
+    var y_rocks;
+    var y_life;
+    //console.info("Trying to find closest obj type")
+    if(this.cash && this.cash.length>0) //check Cash
+    {      y_cash = this.cash[0].physics.y;     }//of the oldest cash created
+      else {y_cash = -10000;} //a number that places it far away
+
+    if(this.rocks && this.rocks.length>0) //check Rock
+    {          y_rocks = this.rocks[0].physics.y;     }
+      else {y_rocks = -10000;} //a number that places it far away
+
+    if(this.life && this.life.length>0) //check life
+    {          y_life = this.life[0].physics.y;     }
+      else {y_life = -10000;} //a number that places it far away
+
+    var y_car = this.assets.car.physics.y;
+    var dists_y = [10000*((y_car-y_cash)<=0)+(y_car-y_cash)*((y_car-y_cash)>0),
+                   10000*((y_car-y_rocks)<=0)+(y_car-y_rocks)*((y_car-y_rocks)>0),
+                   10000*((y_car-y_life)<=0)+(y_car-y_life)*((y_car-y_life)>0),
+                 ]; //if object is behind var, make this a large positive value
+    var ix_min = indexOfSmallest(dists_y);
+   //console.info("Controls: Closest type: ",ix_min);
+   //console.info("Controls: Distance in y = ",dists_y[ix_min]);
+
+   if(dists_y[ix_min]>10000) //no spawned object ahead
+   {return 3;}
+   else {return ix_min;} //else return type of object ahead
+
+ } //end of closestObject
+
   start() {
     this.gameOver = false;
     document.getElementById("welcome").style.display="none";
     this.assets.car.resetLife();
- 
+
     setInterval(() => {
       if (!this.gameOver) {
         var boxEmpty = Array.isArray(this.boxed) && !this.boxed.length;
@@ -342,7 +405,7 @@ class Game {
           this.createLife(boxEmpty &&this.lifeBoxProbablityFunction());
         }
         ctr++;
-        
+
       }
     }, 5000);
 
@@ -350,33 +413,39 @@ class Game {
       this.randomizesprite();
     }, 7000);
 
-    
+
 //--------------------AI agent---------------------
     setInterval(() => { //controls
+    this.releaseControls();
+    var closestObjectType;
+    closestObjectType = this.closestObject();
+    console.info("Controls: Closest object type = ",closestObjectType);
+
       // cash
-      
     if(this.cash && this.cash.length>0)
         {
-        console.info("Controls: ",[this.cash[this.cash.length-1].physics.x, this.cash[this.cash.length-1].physics.y]);
-        console.info("Controls: ",this.cash.length);
-        console.info("Controls: ","Car pos: ",[this.assets.car.physics.x, this.assets.car.physics.y]);
-        console.info("Controls: ","Cash Exists"); 
+        //console.info("Controls: ",[this.cash[this.cash.length-1].physics.x, this.cash[this.cash.length-1].physics.y]);
+        //console.info("Controls: ",this.cash.length);
+        //console.info("Controls: ","Car pos: ",[this.assets.car.physics.x, this.assets.car.physics.y]);
+        //console.info("Controls: ","Cash Exists");
 
         // move to cash
-        this.assets.car.physics.dLeft=0;
-        this.assets.car.physics.dRight=0;
-        
+
+        //this.assets.car.physics.dLeft=0;
+        //this.assets.car.physics.dRight=0;
+
         var err_x = this.cash[0].physics.x - this.assets.car.physics.x;
         if(err_x>=0)
             {
-            console.info("Controls: Going right");
-            this.assets.car.physics.dRight = .01*err_x;
+            //console.info("Controls: Going right");
+            this.moveRight(.01*err_x);
             }
         else
             {
-            console.info("Controls: Going left");
-            this.assets.car.physics.dLeft = -.01*err_x;
+            //console.info("Controls: Going left");
+            this.moveLeft(-.01*err_x);
             }
+
 
         } //end catching cash code
     else
@@ -386,10 +455,10 @@ class Game {
 
      //move randomly
     if(0)
-      {  
+      {
         if(Math.random() >= 0.5)
         {
-        //console.info("Controls: ","Left");  
+        //console.info("Controls: ","Left");
         this.assets.car.physics.dLeft=1;
         this.assets.car.physics.dRight=0;
         }
@@ -397,25 +466,25 @@ class Game {
         {
         //console.info("Controls: ","Right");
         this.assets.car.physics.dRight=1;
-        this.assets.car.physics.dLeft=0;   
+        this.assets.car.physics.dLeft=0;
         }
       }
-    
+
     if(1)
     {
-    
+
 //
     }
     }, 1000);
-    
+
 //-----------------end AI agent code---------------
 
     this.draw();
     this.assets.road.move();
-   
+
   }
 
-  
+
 }
 
 export default Game;
