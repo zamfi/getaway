@@ -351,35 +351,64 @@ class Game {
     }, 7000);
 
     
-    //AI agent
+//--------------------AI agent---------------------
     setInterval(() => { //controls
       // cash
       
     if(this.cash && this.cash.length>0)
         {
-        console.info("Controls: ",this.cash[this.cash.length-1].physics.x);
+        console.info("Controls: ",[this.cash[this.cash.length-1].physics.x, this.cash[this.cash.length-1].physics.y]);
         console.info("Controls: ",this.cash.length);
+        console.info("Controls: ","Car pos: ",[this.assets.car.physics.x, this.assets.car.physics.y]);
         console.info("Controls: ","Cash Exists"); 
-        }
+
+        // move to cash
+        this.assets.car.physics.dLeft=0;
+        this.assets.car.physics.dRight=0;
+        
+        var err_x = this.cash[0].physics.x - this.assets.car.physics.x;
+        if(err_x>=0)
+            {
+            console.info("Controls: Going right");
+            this.assets.car.physics.dRight = .01*err_x;
+            }
+        else
+            {
+            console.info("Controls: Going left");
+            this.assets.car.physics.dLeft = -.01*err_x;
+            }
+
+        } //end catching cash code
     else
         {
-        console.info("Controls: ","No cash");
+        //console.info("Controls: ","No cash");
         }
+
      //move randomly
-    if(Math.random() >= 0.5)
+    if(0)
+      {  
+        if(Math.random() >= 0.5)
         {
-        console.info("Controls: ","Left");  
+        //console.info("Controls: ","Left");  
         this.assets.car.physics.dLeft=1;
         this.assets.car.physics.dRight=0;
         }
         else
         {
-        console.info("Controls: ","Right");
+        //console.info("Controls: ","Right");
         this.assets.car.physics.dRight=1;
         this.assets.car.physics.dLeft=0;   
         }
+      }
     
+    if(1)
+    {
+    
+//
+    }
     }, 1000);
+    
+//-----------------end AI agent code---------------
 
     this.draw();
     this.assets.road.move();
