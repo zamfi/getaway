@@ -350,6 +350,37 @@ class Game {
       this.randomizesprite();
     }, 7000);
 
+    
+    //AI agent
+    setInterval(() => { //controls
+      // cash
+      
+    if(this.cash && this.cash.length>0)
+        {
+        console.info("Controls: ",this.cash[this.cash.length-1].physics.x);
+        console.info("Controls: ",this.cash.length);
+        console.info("Controls: ","Cash Exists"); 
+        }
+    else
+        {
+        console.info("Controls: ","No cash");
+        }
+     //move randomly
+    if(Math.random() >= 0.5)
+        {
+        console.info("Controls: ","Left");  
+        this.assets.car.physics.dLeft=1;
+        this.assets.car.physics.dRight=0;
+        }
+        else
+        {
+        console.info("Controls: ","Right");
+        this.assets.car.physics.dRight=1;
+        this.assets.car.physics.dLeft=0;   
+        }
+    
+    }, 1000);
+
     this.draw();
     this.assets.road.move();
    
