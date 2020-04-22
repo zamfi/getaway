@@ -506,8 +506,8 @@ moveRandom(step){
     }, 5000);
 
     setInterval(() => {
-    //  this.randomizesprite();
-    }, 7000);
+      this.randomizesprite();
+    }, 7000); //what is the right interval for this?
 
 
 //--------------------AI agent---------------------
@@ -528,7 +528,7 @@ moveRandom(step){
     }
     else
     {
-      this.moveRandom(1);
+      this.moveRandom(0.5);
     }
   }, 1000); //every 1s
 
