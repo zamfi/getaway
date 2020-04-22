@@ -13,6 +13,12 @@ const lifeImgFolder = "./assets/images/life/";
 const obstacleImgFolder = "./assets/images/obstacle/";
 const moneyImgFolder = "./assets/images/money/";
 var ctr = 0;
+const T_width = (70+50)/2+12; //car width/2 + obstacle width/2 + small constt.
+const R_l = 100; // road lb in x; //100 pixels on each side for dead zone?
+const R_u = 400; // road ub in x;
+const Kp_obs = 0.03; //Kp for x-tracker on car for obstacle avoidance
+const Kp_getter = 0.01; //Kp for x-tracker on car to get life or cash
+const obj_buf = 75; //constant for when object goes behind car (1/2 of car len)
 
 function indexOfSmallest(a) {
  var lowest = 0;
@@ -372,9 +378,9 @@ class Game {
       else {y_life = -10000;} //a number that places it far away
 
     var y_car = this.assets.car.physics.y;
-    var dists_y = [10000*((y_car-y_cash)<=0)+(y_car-y_cash)*((y_car-y_cash)>0),
-                   10000*((y_car-y_rocks)<=0)+(y_car-y_rocks)*((y_car-y_rocks)>0),
-                   10000*((y_car-y_life)<=0)+(y_car-y_life)*((y_car-y_life)>0),
+    var dists_y = [10000*((y_car-y_cash)<=-obj_buf)+(y_car-y_cash)*((y_car-y_cash)>-obj_buf),
+                   10000*((y_car-y_rocks)<=-obj_buf)+(y_car-y_rocks)*((y_car-y_rocks)>-obj_buf),
+                   10000*((y_car-y_life)<=-obj_buf)+(y_car-y_life)*((y_car-y_life)>-obj_buf),
                  ]; //if object is behind var, make this a large positive value
     var ix_min = indexOfSmallest(dists_y);
    //console.info("Controls: Closest type: ",ix_min);
@@ -385,6 +391,96 @@ class Game {
    else {return ix_min;} //else return type of object ahead
 
  } //end of closestObject
+
+
+rockAvoider() {
+  var Cx = this.assets.car.physics.x;
+  var Ox = this.rocks[0].physics.x; //x of nearest rock
+  var x_ref = Cx;
+  if(Math.abs(Ox-Cx) >= T_width)
+  {
+    //don't move
+    x_ref = Cx;
+    console.info("Decision: Not moving, obs diff x= ",Ox-Cx, "T_width=",T_width);
+  }
+  else { //got to move
+    if(Ox>=Cx){ //obstacle on right
+      if(Cx-R_l>=T_width-(Ox-Cx)){ //room on left?
+        x_ref = Ox-T_width;
+        console.info("Decision: Obs right, Going from left of obstacle ");
+      }
+      else{ //no room on left
+        x_ref = Ox+T_width;
+        console.info("Decision: Obs right, Going from right of obstacle ");
+      }
+    } //end if Ox>=Cx
+    else //obstacle on left
+    { //if Ox<Cx
+      if(R_u-Cx > T_width-(Cx-Ox)) //room on right?
+      {
+        x_ref = Ox+T_width;
+        console.info("Decision: Obs left, Going from right of obstacle ");
+      }
+      else //no room on right
+      {
+        x_ref = Ox-T_width;
+        console.info("Decision: Obs left, Going from left of obstacle ");
+      }
+    } //end of else obstacle on left
+  } //end of else got to move
+// take action
+var err_x = x_ref-Cx;
+  if(err_x>0)
+  {
+      this.moveRight(Kp_obs*err_x);
+      console.info("Controls: Right, ref = ",x_ref, "err=",err_x);
+  }
+  else if(err_x<0) //0 is to not move
+  {
+      this.moveLeft(-Kp_obs*err_x);
+      console.info("Controls: Left, ref = ",x_ref, "err=",err_x);
+  }
+
+} //end of rock avoider
+
+objectGetter(o_type) {
+  if(o_type==0) //Cash
+  {
+    var x_ref = this.cash[0].physics.x;
+  }
+  else if(o_type==2) //life
+  {
+    var x_ref = this.life[0].physics.x;
+  }
+  var err_x = x_ref - this.assets.car.physics.x;
+  if(err_x>=0)
+      {
+      //console.info("Controls: Going right");
+      this.moveRight(Kp_getter*err_x);
+      }
+  else
+      {
+      //console.info("Controls: Going left");
+      this.moveLeft(-Kp_getter*err_x);
+      }
+
+
+} //end of object getter
+
+moveRandom(step){
+  //move randomly
+
+     if(Math.random() >= 0.5)
+     {
+     console.info("Controls: ","Random Left");
+     this.moveLeft(step);
+     }
+     else
+     {
+     console.info("Controls: ","Random Right");
+     this.moveRight(step);
+     }
+} //end move random
 
   start() {
     this.gameOver = false;
@@ -410,72 +506,31 @@ class Game {
     }, 5000);
 
     setInterval(() => {
-      this.randomizesprite();
+    //  this.randomizesprite();
     }, 7000);
 
 
 //--------------------AI agent---------------------
     setInterval(() => { //controls
-    this.releaseControls();
+    this.releaseControls(); //zero-order hold (release key)
     var closestObjectType;
-    closestObjectType = this.closestObject();
+    closestObjectType = this.closestObject(); //get type of object that is closest
     console.info("Controls: Closest object type = ",closestObjectType);
 
-      // cash
-    if(this.cash && this.cash.length>0)
-        {
-        //console.info("Controls: ",[this.cash[this.cash.length-1].physics.x, this.cash[this.cash.length-1].physics.y]);
-        //console.info("Controls: ",this.cash.length);
-        //console.info("Controls: ","Car pos: ",[this.assets.car.physics.x, this.assets.car.physics.y]);
-        //console.info("Controls: ","Cash Exists");
-
-        // move to cash
-
-        //this.assets.car.physics.dLeft=0;
-        //this.assets.car.physics.dRight=0;
-
-        var err_x = this.cash[0].physics.x - this.assets.car.physics.x;
-        if(err_x>=0)
-            {
-            //console.info("Controls: Going right");
-            this.moveRight(.01*err_x);
-            }
-        else
-            {
-            //console.info("Controls: Going left");
-            this.moveLeft(-.01*err_x);
-            }
-
-
-        } //end catching cash code
-    else
-        {
-        //console.info("Controls: ","No cash");
-        }
-
-     //move randomly
-    if(0)
-      {
-        if(Math.random() >= 0.5)
-        {
-        //console.info("Controls: ","Left");
-        this.assets.car.physics.dLeft=1;
-        this.assets.car.physics.dRight=0;
-        }
-        else
-        {
-        //console.info("Controls: ","Right");
-        this.assets.car.physics.dRight=1;
-        this.assets.car.physics.dLeft=0;
-        }
-      }
-
-    if(1)
+    //rock  avoider
+    if(closestObjectType==1) //obstacle
     {
-
-//
+      this.rockAvoider();
     }
-    }, 1000);
+    else if(closestObjectType==0 || closestObjectType==2) //object to get
+    {
+      this.objectGetter(closestObjectType);
+    }
+    else
+    {
+      this.moveRandom(1);
+    }
+  }, 1000); //every 1s
 
 //-----------------end AI agent code---------------
 
