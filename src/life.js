@@ -2,7 +2,7 @@ import Sprite from './sprite';
 
 const lifeImg = new Image();
 //lifeImg.src = "./assets/images/turbo.png";
-
+const scale = 1.5;
 const redBox = new Image();
 redBox.src = "./assets/images/redbox.png";
 
@@ -12,15 +12,15 @@ class Life {
     
     lifeImg.src = imgSrc;
 
-    this.sprite = new Sprite(lifeImg, 50, 50, 1.0, 1.0);
-    this.box = new Sprite(redBox, 40, 50, 1.0, 1.3)
+    this.sprite = new Sprite(lifeImg, 50, 50, 1.0*scale, 1.0*scale);
+    this.box = new Sprite(redBox, 40, 50, 1.0*scale, 1.3*scale)
     this.marked = marked;
     this.distance = distance;
   }
 
   updatesprite(imgSrc) {
     lifeImg.src = imgSrc;
-    this.sprite = new Sprite(lifeImg, 50, 50, 1.0, 1.0);
+    this.sprite = new Sprite(lifeImg, 50, 50, 1.0*scale, 1.0*scale);
   }
 
   move() {
