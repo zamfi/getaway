@@ -517,6 +517,9 @@ moveRandom(step){
     closestObjectType = this.closestObject(); //get type of object that is closest
     console.info("Controls: Closest object type = ",closestObjectType);
 
+    // Add a flag for answered or not (and lower it) and execute control code
+    // only if the object has been recognized. Lower flag when done tracking.
+
     //rock  avoider
     if(closestObjectType==1) //obstacle
     {
