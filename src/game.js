@@ -19,7 +19,7 @@ const R_u = 400; // road ub in x;
 const Kp_obs = 0.03; //Kp for x-tracker on car for obstacle avoidance
 const Kp_getter = 0.01; //Kp for x-tracker on car to get life or cash
 const obj_buf = 75; //constant for when object goes behind car (1/2 of car len)
-
+const OBJECTTYPE = Object.freeze({ "obstacle": "O", "cash": "C", "life": "L" });
 function indexOfSmallest(a) {
  var lowest = 0;
  for (var i = 1; i < a.length; i++) {
@@ -46,6 +46,7 @@ class Game {
     this.moneyImgLists = [];
     this.obstacleImgLists = [];
     this.numImgs = 16;
+    this.assetidCounter = -1;
 
 
     for (var i = 0; i < this.numImgs; i++) {
@@ -57,19 +58,54 @@ class Game {
     document.getElementById("money").style["background-image"] = "url(\'" + this.moneyImgSrc + "\')";
     document.getElementById("life").style["background-image"] = "url(\'" + this.lifeImgSrc + "\')";
   }
+  blinkCanvas(blinkRate, blinkDuration,color) {
+    var interval = window.setInterval(function () {
+      if (document.getElementById("canvas").style["border"] != "20px solid "+color) {
+        document.getElementById("canvas").style["border"] = "20px solid "+color;
+      } else {
+        document.getElementById("canvas").style["border"] = "20px solid black";
+      }
+    }, blinkRate);
+
+    setTimeout(function (y) {
+      document.getElementById("canvas").style["border"] = "20px solid black";
+      clearInterval(y);
+    }, blinkDuration, interval);
+}
+  checkUserResponse(i) {
+    if (this.boxed.length > 0) {
+          if (this.boxed[0][0] == i) {
+              //Blink green
+            //document.getElementById("canvas").style["border"] = "20px solid green";
+            this.blinkCanvas(200, 2000,"green");
+
+          }
+          else {
+            //Blink red
+            //document.getElementById("canvas").style["border"] = "20px solid red";
+            this.blinkCanvas(200, 2000, "red");
+          }
+      }
+  }
 
 
 
   // hit detection for objects
-  static checkCollision(car, object, array, assets) {
+  static checkCollision(car, object, array, assets,boxed) {
     if (object instanceof Obstacle) {
       if (Util.collide_with_scale(car, object)) {
         car.hitObstacle();
         car.makeRed();
         array.splice(array.indexOf(object), 1);
-        // if (this.boxed.indexOf(object) != -1) {
-        //   this.boxed.splice(this.boxed.indexOf(object), 1);
-        // }
+        console.log("Before removing");
+        console.log(boxed);
+        console.log(object.assetid);
+        if (boxed.indexOf(object.assetid) != -1) {
+          boxed.splice(boxed.indexOf(object.assetid), 1);
+        }
+        console.log("After removing");
+        console.log(boxed);
+        console.log(object.assetid);
       }
     }
     if (object instanceof Life) {
@@ -77,9 +113,15 @@ class Game {
         car.getLife();
         car.makeGreen();
         array.splice(array.indexOf(object), 1);
-        // if (this.boxed.indexOf(object) != -1) {
-        //   this.boxed.splice(this.boxed.indexOf(object), 1);
-        // }
+        console.log("Before removing");
+        console.log(boxed);
+        console.log(object.assetid);
+        if (boxed.indexOf(object.assetid) != -1) {
+          boxed.splice(boxed.indexOf(object.assetid), 1);
+        }
+        console.log("After removing");
+        console.log(boxed);
+        console.log(object.assetid);
       }
     }
     if (object instanceof Cash) {
@@ -87,9 +129,15 @@ class Game {
         assets.road.score += 100;
         assets.road.makeGreen();
         array.splice(array.indexOf(object), 1);
-        // if (this.boxed.indexOf(object) != -1) {
-        //   this.boxed.splice(this.boxed.indexOf(object), 1);
-        // }
+        console.log("Before removing");
+        console.log(boxed);
+        console.log(object.assetid);
+        if (boxed.indexOf(object.assetid) != -1) {
+          boxed.splice(boxed.indexOf(object.assetid), 1);
+        }
+        console.log("After removing");
+        console.log(boxed);
+        console.log(object.assetid);
       }
     }
   }
@@ -116,42 +164,34 @@ class Game {
     return (Math.random() > 0.5);
   }
 
+  
   // checks if item passed canvas height to delete
   static checkCanvas(object, array, boxed) {
 
     if (object instanceof Life) {
-      console.log("Before removing");
-      console.log(boxed);
-      console.log(object);
-      console.log(boxed.indexOf(object));
+      
       if (object.physics.y > canvas.height) {
         array.splice(array.indexOf(object), 1);
-        if (boxed.indexOf(object) != -1){
-           boxed.splice(boxed.indexOf(object), 1);
+        if (boxed.indexOf(object.assetid) != -1){
+          boxed.splice(boxed.indexOf(object.assetid), 1);
          }
       }
     }
     if (object instanceof Obstacle) {
-      console.log("Before removing");
-      console.log(boxed);
-      console.log(object);
-      console.log(boxed.indexOf(object));
+      
       if (object.physics.y > canvas.height) {
         array.splice(array.indexOf(object), 1);
-        if (boxed.indexOf(object) != -1) {
-          boxed.splice(boxed.indexOf(object), 1);
+        if (boxed.indexOf(object.assetid) != -1) {
+          boxed.splice(boxed.indexOf(object.assetid), 1);
         }
       }
     }
     if (object instanceof Cash) {
-      console.log("Before removing");
-      console.log(boxed);
-      console.log(object);
-      console.log(boxed.indexOf(object));
+      
       if (object.physics.y > canvas.height) {
         array.splice(array.indexOf(object), 1);
-        if (boxed.indexOf(object) != -1) {
-          boxed.splice(boxed.indexOf(object), 1);
+        if (boxed.indexOf(object.assetid) != -1) {
+          boxed.splice(boxed.indexOf(object.assetid), 1);
         }
       }
     }
@@ -177,7 +217,7 @@ class Game {
     if (asset instanceof Obstacle && asset.physics.y >= 0) {
       if (asset.physics.y > canvas.height) {
         this.ctx.drawImage(sprite.img, 0, 0, sprite.width, sprite.height, asset.physics.x, asset.physics.y - 900, sprite.width * sprite.width_scale, sprite.height * sprite.height_scale);
-        console.log("Drawing rock");
+        //console.log("Drawing rock");
 
         // if(marked){
         //   //this.ctx.drawImage(box.img, 0, 0, box.width, box.height, asset.physics.x, asset.physics.y - 900, box.width*sprite.width_scale, box.height*sprite.height_scale);
@@ -198,14 +238,20 @@ class Game {
       if (marked &&  physics.y>distance*this.canvas.height) {
 
           //this.ctx.drawImage(box.img, 0, 0, box.width, box.height, physics.x, physics.y, box.width*sprite.width_scale, box.height*sprite.height_scale);
-        this.ctx.drawImage(box.img, 0, 0, box.width, box.height, physics.x + 0.5 * (sprite.width * sprite.width_scale - box.width * box.width_scale), asset.physics.y + 0.5 * (sprite.height * sprite.height_scale - box.height * box.height_scale), box.width * box.width_scale, box.height * box.height_scale);
+        
 
-
-        if (this.boxed.indexOf(asset) == -1) {
-          console.log("While adding");
-          this.boxed.push(asset);
-          console.log(this.boxed);
-        }
+       
+            if (this.boxed.indexOf(asset.assetid) == -1) {
+            // console.log("After adding");
+              if (this.boxed.length == 0){
+                this.boxed.push(asset.assetid);
+                this.blinkCanvas(200, 800, "blue");
+              }
+            // console.log(this.boxed);
+            }
+            else {
+              this.ctx.drawImage(box.img, 0, 0, box.width, box.height, physics.x + 0.5 * (sprite.width * sprite.width_scale - box.width * box.width_scale), asset.physics.y + 0.5 * (sprite.height * sprite.height_scale - box.height * box.height_scale), box.width * box.width_scale, box.height * box.height_scale);
+            }
 
         }
     }
@@ -258,20 +304,20 @@ class Game {
 
         // check collision for rocks
         this.rocks.forEach(el => {
-          Game.checkCollision(this.assets.car, el, this.rocks);
+          Game.checkCollision(this.assets.car, el, this.rocks,this.assets,this.boxed);
           Game.checkCanvas(el, this.rocks, this.boxed);
         })
 
         // check collision for life
 
         this.life.forEach(el => {
-          Game.checkCollision(this.assets.car, el, this.life);
+          Game.checkCollision(this.assets.car, el, this.life,this.assets,this.boxed);
           Game.checkCanvas(el, this.life,this.boxed);
         })
 
         // check collision for life
         this.cash.forEach(el => {
-          Game.checkCollision(this.assets.car, el, this.cash, this.assets);
+          Game.checkCollision(this.assets.car, el, this.cash, this.assets,this.boxed);
           Game.checkCanvas(el, this.cash,this.boxed);
         })
 
@@ -313,24 +359,28 @@ class Game {
   }
 
   createRock(bool_marked) {
+
     this.rocks.push(new Obstacle(new Physics(
       Math.floor(Math.random() * 310) + 80,
-      -20),this.rockImgSrc,true,0.3
+      -20),this.rockImgSrc,true,("O"+(++this.assetidCounter).toString()), 0.3
     ));
+    
   };
 
   createLife(bool_marked) {
     this.life.push(new Life(new Physics(
       Math.floor(Math.random() * 310) + 80,
-      -20),this.lifeImgSrc,true,0.3
+      -20), this.lifeImgSrc, true, ("L" + (++this.assetidCounter).toString()),0.3
     ));
+    
   };
 
   createCash(bool_marked) {
     this.cash.push(new Cash(new Physics(
       Math.floor(Math.random() * 310) + 80,
-      -20),this.moneyImgSrc,true,0.3
+      -20), this.moneyImgSrc, true, ("C" + (++this.assetidCounter).toString()),0.3
     ));
+    
   };
 
   cleanUp() {

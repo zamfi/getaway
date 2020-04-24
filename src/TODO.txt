@@ -6,18 +6,18 @@
     #4.2 Mapping entities 
     #4.3 Change the road image
 #5. Distance Mark function
-6. One thing marked at the time - need more details
+#6. One thing marked at the time - need more details
 7. Interface panel - tied to time function, question
     7.1 Display keyboard key icons next to item legend
-    7.2 Display the question - "What is the boxed item?"
+    #7.2 Display the question - "What is the boxed item?"
     7.3 Keyboard interface for providing input
-        7.3.1 blink frame color green
-        7.3.2 blink frame color red
-        7.3.3 blink frame color blue
+        #7.3.1 blink frame color green
+        #7.3.2 blink frame color red
+        #7.3.3 blink frame color blue
     7.4 Bar for time remaining
         7.4.1 if time elapses - give -ve feedback - blink frame red
 8. Box them based on time rather than probablity
-9. Car controller for driving this - PID
+#9. Car controller for driving this - PID
 
 
 

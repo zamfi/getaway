@@ -7,7 +7,7 @@ const redBox = new Image();
 redBox.src = "./assets/images/redbox.png";
 
 class Life {
-  constructor(physics, imgSrc, marked,  distance = -1) {
+  constructor(physics, imgSrc, marked, assetid, distance = -1) {
     this.physics = physics;
     
     lifeImg.src = imgSrc;
@@ -15,6 +15,7 @@ class Life {
     this.sprite = new Sprite(lifeImg, 50, 50, 1.0*scale, 1.0*scale);
     this.box = new Sprite(redBox, 40, 50, 1.0*scale, 1.3*scale)
     this.marked = marked;
+    this.assetid = assetid;
     this.distance = distance;
   }
 

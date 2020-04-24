@@ -7,6 +7,7 @@
     <link rel="shortcut icon" type="image/png" href="./assets/images/wheel.png" />
     <link href="./assets/stylesheets/reset.css" rel="stylesheet">
     <link href="./assets/stylesheets/game.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   </head>
   
   <body>
@@ -21,7 +22,7 @@
             </div>
             <h1 id="slow"></h1>
           </div>
-          <canvas id="canvas" style="border: 1px solid black"></canvas>
+          <canvas id="canvas" style="border: 20px solid black"></canvas>
         </div>
       </div>
       
@@ -29,18 +30,20 @@
         <h2 class="title">Autonomous car simulator</h2>
         
         <div class="justify">
+          
           <div class="controls"></div>
+          <h3 class="title" style="font-size:32px;">What is the boxed item?</h3>
           <div class="obstacle-container">
-            <div class="obstacles" id="obstacle"></div>
-            <h2>Obstacles</h2>
+            <div class="obstacles" style="font-size:20px;" id="obstacle"></div>
+            <h4>Obstacle</h4> <i class="material-icons" style="font-size:60px;">filter_1</i>
           </div>
           <div class="cash-container">
-            <div class="cash" id="money"></div>
-            <h2>Points</h2>
+            <div class="cash"  style="font-size:20px;"  id="money"></div>
+            <h4>Points</h4> <i class="material-icons" style="font-size:60px;">filter_2</i>
           </div>
           <div class="life-container">
-            <div class="life" id="life"></div>
-            <h2>Extra life</h2>
+            <div class="life"  style="font-size:20px;"  id="life"></div>
+            <h4>Extra life</h4> <i class="material-icons" style="font-size:60px;">filter_3</i>
           </div>
         </div>
         
