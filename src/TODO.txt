@@ -14,6 +14,7 @@
         #7.3.1 blink frame color green
         #7.3.2 blink frame color red
         #7.3.3 blink frame color blue
+        7.3.4 Get only one input per box
     7.4 Bar for time remaining
         7.4.1 if time elapses - give -ve feedback - blink frame red
 8. Box them based on time rather than probablity
