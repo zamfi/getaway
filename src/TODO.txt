@@ -35,7 +35,15 @@
 #9. Car controller for driving this - PID
     9.1 Controller triggered upon human identification for unknown objects
 10. Distractor task panel
-    10.1 - Arithmethic tasks
+    10.1 Arithmethic tasks
+
+11. Data collection
+    11.1 Number of obstacles, points and extra life
+    11.2 Timelog of events 
+        11.2.1 Timed Generation log
+        11.2.2 Timed User input log 
+        11.2.3 (x,y) coords of all assets when a query and user i/p was recorded
+        11.2.4 Time of change of icons
 
 
 
