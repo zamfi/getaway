@@ -21,13 +21,21 @@
                         else if asset.boxed is true, then set asset.recognizedType to undecided isUnrecognized
                 #7.3.6.2 set asset.recognizedType to user input value
     7.4 Bar for time remaining
+<<<<<<< HEAD
         7.4.1 Vary boxing distances (aka timeout for system recognition failure)
         #7.4.2 Calculate time remaining based on speed and remaining distance
         #7.4.3 Visualize time bar - for time remaining
+=======
+        7.4.1 Vary boxing distances (aka timeout for system recognition failure) only for attention query 
+                Other siwse fixed distance (1/3 down) - 3 car lengths?
+        7.4.2 Calculate time remaining based on speed and remaining distance
+        7.4.3 Visualize time bar - for time remaining
+>>>>>>> 83bfd3fc44146af03588e25fcbd93d1e6334ec9b
         7.4.4 if time elapses - give -ve feedback - blink frame red
         #7.4.5 isBoxed is a misnomer - 
         7.4.6 Make time bar aesthetically nice
     7.5 Separate pane for the interface - look at the amendment document
+    7.6 Move car all way down
 8. Box them based on two different criteria
     8.1 Environment query - based on hard time constraint rather than probablity
     8.2 Attention query -  based on probablity (existing one)
@@ -38,7 +46,15 @@
     9.1 Controller triggered upon human identification for unknown objects
     9.2 Deactivate controller once it has crossed a y-threshold? (How would we calculate time left, should we calculate till threshold?)
 10. Distractor task panel
-    10.1 - Arithmethic tasks
+    10.1 Arithmethic tasks
+
+11. Data collection
+    11.1 Number of obstacles, points and extra life
+    11.2 Timelog of events 
+        11.2.1 Timed Generation log
+        11.2.2 Timed User input log 
+        11.2.3 (x,y) coords of all assets when a query and user i/p was recorded
+        11.2.4 Time of change of icons
 
 
 
