@@ -20,7 +20,9 @@ const Kp_obs = 0.03; //Kp for x-tracker on car for obstacle avoidance
 const Kp_getter = 0.01; //Kp for x-tracker on car to get life or cash
 const obj_buf = 75; //constant for when object goes behind car (1/2 of car len)
 const OBJECTTYPE = Object.freeze({ "obstacle": "O", "cash": "C", "life": "L" });
-
+var prev_time = null;
+var prev_object_y = null;
+var max_time = 15;
 function indexOfSmallest(a) {
  var lowest = 0;
  for (var i = 1; i < a.length; i++) {
@@ -48,7 +50,9 @@ class Game {
     this.obstacleImgLists = [];
     this.numImgs = 16;
     this.assetidCounter = -1;
-
+    this.activeResponse = false;
+    this.stopBlink = false;
+    
 
     for (var i = 0; i < this.numImgs; i++) {
       this.lifeImgLists.push(lifeImgFolder + "life (" + (i + 1).toString() + ").png");
@@ -59,37 +63,157 @@ class Game {
     document.getElementById("money").style["background-image"] = "url(\'" + this.moneyImgSrc + "\')";
     document.getElementById("life").style["background-image"] = "url(\'" + this.lifeImgSrc + "\')";
   }
-  blinkCanvas(blinkRate, blinkDuration,color) {
+  holdCanvas(blinkDuration,color) {
     var interval = window.setInterval(function () {
-      if (document.getElementById("canvas").style["border"] != "20px solid "+color) {
-        document.getElementById("canvas").style["border"] = "20px solid "+color;
-      } else {
-        document.getElementById("canvas").style["border"] = "20px solid black";
-      }
-    }, blinkRate);
+      document.getElementById("canvas").style["border"] = "20px solid "+color;
+    }, 5);
 
     setTimeout(function (y) {
       document.getElementById("canvas").style["border"] = "20px solid black";
       clearInterval(y);
     }, blinkDuration, interval);
 }
+blinkCanvas(blinkRate, blinkDuration,color) {
+  var interval = window.setInterval(function () {
+    if (document.getElementById("canvas").style["border"] != "20px solid "+color) {
+      document.getElementById("canvas").style["border"] = "20px solid "+color;
+    } else {
+      document.getElementById("canvas").style["border"] = "20px solid black";
+    }
+  }, blinkRate);
+
+  setTimeout(function (y) {
+    document.getElementById("canvas").style["border"] = "20px solid black";
+    clearInterval(y);
+  }, blinkDuration, interval);
+}
+
+setRecognizedType(assetid,assetUserSpecifiedType){
+  var assetActualType = assetid[0];
+  var i;
+  switch(assetActualType){
+    case "O":
+      
+      for (i = 0; i < this.rocks.length; i++) {
+        if(this.rocks[i].assetid == assetid){
+          this.rocks[i].recognizedType = assetUserSpecifiedType;
+          break;
+        }
+      }
+      break;
+    case "L":
+      for (i = 0; i < this.life.length; i++) {
+        if(this.life[i].assetid == assetid){
+          this.life[i].recognizedType = assetUserSpecifiedType;
+          break;
+        }
+      }
+      break;
+    case "C":
+      for (i = 0; i < this.cash.length; i++) {
+        if(this.cash[i].assetid == assetid){
+          this.cash[i].recognizedType = assetUserSpecifiedType;
+          break;
+        }
+      }
+      break;
+      default:
+        console.log("Unrecognized asset type");
+  }
+}
   checkUserResponse(i) {
-    if (this.boxed.length > 0) {
+
+    if (this.boxed.length > 0 && this.activeResponse) {
           if (this.boxed[0][0] == i) {
               //Blink green
             //document.getElementById("canvas").style["border"] = "20px solid green";
-            this.blinkCanvas(200, 2000,"green");
+            this.holdCanvas(2000,"green");
+            this.activeResponse = false;
+            this.setRecognizedType(this.boxed[0],i);
 
           }
           else {
             //Blink red
             //document.getElementById("canvas").style["border"] = "20px solid red";
-            this.blinkCanvas(200, 2000, "red");
+            this.holdCanvas(2000, "red");
+            this.activeResponse = false;
+            this.setRecognizedType(this.boxed[0],i)
           }
       }
   }
 
 
+  updateTimeBar(){
+    var objectType = this.closestObject(); // 0: cash, 1: rock, 2: life, 3: no spawned object ahead
+
+    var object_y = null;
+    var object_height = null;
+    const car_y = this.assets.car.physics.y;
+    const car_height = this.assets.car.physics.height ? this.assets.car.physics.height : this.assets.car.sprite.height*this.assets.car.sprite.height_scale;
+    var speed = 0;
+    var curr_time;
+    if(objectType == 0){
+      object_height = this.cash[0].physics.height ? this.cash[0].physics.height : this.cash[0].sprite.height*this.cash[0].sprite.height_scale;
+      object_y = this.cash[0].physics.y;
+      curr_time = (new Date()).getTime();
+    }
+    else if(objectType == 1){
+      object_height = this.rocks[0].physics.height ? this.rocks[0].physics.height : this.rocks[0].sprite.height*this.rocks[0].sprite.height_scale;
+      object_y = this.rocks[0].physics.y;
+      curr_time = (new Date()).getTime();
+    }
+    else if(objectType == 2){
+      object_height = this.life[0].physics.height ? this.life[0].physics.height : this.life[0].sprite.height*this.life[0].sprite.height_scale;
+      object_y = this.life[0].physics.y;
+      curr_time = (new Date()).getTime();
+    }
+
+    
+    if(prev_time == null)
+    {
+      speed = null;
+      prev_time = curr_time;
+    }
+    if(prev_object_y == null){
+      speed = null;
+      prev_object_y = object_y;
+      prev_time = curr_time;
+    }
+
+    if(object_y == null)
+    {
+      speed = null;
+    }
+
+    if(object_y!=null && prev_object_y!=null){
+        if(object_y < prev_object_y){
+          speed = null;
+          prev_object_y = object_y;
+          prev_time = curr_time;
+        }
+    }
+
+    if(speed!=null){
+      var d = new Date();
+      
+      speed = (object_y - prev_object_y) / (0.001*(curr_time - prev_time));
+      speed = 24;
+      max_time = car_y /speed;
+      var time_bar_length = ((car_y) - (object_y+object_height))/speed;
+      console.log("Time bar length: "+Math.floor(time_bar_length) + ", Speed: "+speed
+                + ", Car_y: "+car_y + ", Car_height: " +car_height
+                + ", Object_y: "+object_y + ", Object_height: " +object_height
+                + ", Prev_time: "+prev_time+ ", Prev_object_y: " +prev_object_y
+                + ", Curr_time: "+curr_time+ ", Object_y: " +object_y);
+      prev_object_y = object_y;
+      prev_time = curr_time;
+      var elem = document.getElementById("myBar");
+      elem.style.width = ((time_bar_length/max_time)*100) + "%";
+      document.getElementById("myBarTime").innerHTML = `${Math.floor(time_bar_length*10)/10+"s"}`;
+      console.log(Math.floor(time_bar_length*10)/10+"s");
+  }
+
+  }
 
   // hit detection for objects
   static checkCollision(car, object, array, assets,boxed) {
@@ -240,13 +364,14 @@ class Game {
 
           //this.ctx.drawImage(box.img, 0, 0, box.width, box.height, physics.x, physics.y, box.width*sprite.width_scale, box.height*sprite.height_scale);
         
-
+        //console.log("Boxed Object Reconized Type: "+asset.recognizedType);
        
             if (this.boxed.indexOf(asset.assetid) == -1) {
             // console.log("After adding");
               if (this.boxed.length == 0){
                 this.boxed.push(asset.assetid);
-                this.blinkCanvas(200, 800, "blue");
+                this.blinkCanvas(30, 300, "blue");
+                this.activeResponse = true;
               }
             // console.log(this.boxed);
             }
@@ -554,12 +679,15 @@ moveRandom(step){
         ctr++;
 
       }
-    }, 5000);
+    }, 20000);
 
     setInterval(() => {
       this.randomizesprite();
-    }, 21000); //what is the right interval for this?
-
+    }, 84000); //what is the right interval for this?
+    
+    setInterval(() => {
+      this.updateTimeBar();
+    }, 50);
 
 //--------------------AI agent---------------------
     setInterval(() => { //controls

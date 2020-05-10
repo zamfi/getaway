@@ -223,3 +223,14 @@ html {
   /* font-style: oblique; */
   letter-spacing: 1.7px;
 }
+
+#myProgress {
+  width: 100%;
+  background-color: grey;
+}
+
+#myBar {
+  width: 1%;
+  height: 30px;
+  background-color: green;
+}

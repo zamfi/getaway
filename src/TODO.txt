@@ -10,21 +10,23 @@
 7. Interface panel - tied to time function, question
     7.1 Display keyboard key icons next to item legend
     #7.2 Display the question - "What is the boxed item?"
-    7.3 Keyboard interface for providing input
-        #7.3.1 blink frame color green
-        #7.3.2 blink frame color red
+    #7.3 Keyboard interface for providing input
+        #7.3.1 hold frame color green
+        #7.3.2 hold frame color red
         #7.3.3 blink frame color blue
-        7.3.4 Map keys - Q, W, E
-        7.3.5 Get only one input per box and store it in boxedType variable (undecided, cash, life, obstacles)
-        7.3.6 When rendering cash, life, obstacles, 
-                7.3.6.1 if isBoxed is false, then auto-set boxedType to cash, life, obstacle
-                        else if isBoxed is true, then set boxedType to undecided isUnrecognized
+        #7.3.4 Map keys - Q, W, E
+        #7.3.5 Get only one input per box and store it in boxedType variable (undecided, cash, life, obstacles)
+        #7.3.6 When rendering cash, life, obstacles, 
+                #7.3.6.1 if asset.boxed is false, then auto-set asset.recognizedType to cash, life, obstacle
+                        else if asset.boxed is true, then set asset.recognizedType to undecided isUnrecognized
+                #7.3.6.2 set asset.recognizedType to user input value
     7.4 Bar for time remaining
         7.4.1 Vary boxing distances (aka timeout for system recognition failure)
-        7.4.2 Calculate time remaining based on speed and remaining distance
-        7.4.3 Visualize time bar - for time remaining
+        #7.4.2 Calculate time remaining based on speed and remaining distance
+        #7.4.3 Visualize time bar - for time remaining
         7.4.4 if time elapses - give -ve feedback - blink frame red
-        7.4.5 isBoxed is a misnomer - 
+        #7.4.5 isBoxed is a misnomer - 
+        7.4.6 Make time bar aesthetically nice
     7.5 Separate pane for the interface - look at the amendment document
 8. Box them based on two different criteria
     8.1 Environment query - based on hard time constraint rather than probablity
@@ -32,8 +34,9 @@
     8.3 Deploy attention query only when Environment query is inactive
         8.3.1 Environment query takes precedence
         8.3.2 Should not be posed around a time window of the Env. query
-#9. Car controller for driving this - PID
+9. Car controller for driving this - PID
     9.1 Controller triggered upon human identification for unknown objects
+    9.2 Deactivate controller once it has crossed a y-threshold? (How would we calculate time left, should we calculate till threshold?)
 10. Distractor task panel
     10.1 - Arithmethic tasks
 

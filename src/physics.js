@@ -10,7 +10,7 @@ class Physics {
     this.dUp = 0;
     this.dx = this.dx.bind(this);
     this.dy = this.dy.bind(this);
-    this.speed = 1.5;
+    this.speed = 0.4;
   }
 
   dx() {
@@ -29,7 +29,7 @@ class Physics {
   // updates car
   boundedUpdate() {
     const {dx, dy} = this;
-    const bound = { top: 0, down: 550, left: 80, right: 350 };
+    const bound = { top: 0, down: 580, left: 80, right: 350 };
     this.boundedMove({x: dx(), y: dy()}, bound);
   }
 

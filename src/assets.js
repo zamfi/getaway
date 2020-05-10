@@ -4,7 +4,7 @@ import Physics from './physics';
 
 const assets = () => ({
   road: new Road(new Physics(0, -561)),
-  car: new Car(new Physics(214, 500, 70, 100))
+  car: new Car(new Physics(214, 580, 70, 100))
 });
 
 

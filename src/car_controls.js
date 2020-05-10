@@ -13,13 +13,13 @@ const setupControlListeners = (game) => {
     // if (e.key === "s" || e.key === "ArrowDown") {
     //   car.physics.dDown = 4;
     // }
-    if (e.key === "1") {
+    if (e.key === "q" || e.key === "Q") {
       game.checkUserResponse("O");
     }
-    if (e.key === "2") {
+    if (e.key === "w" || e.key === "W") {
       game.checkUserResponse("C");
     }
-    if (e.key === "3") {
+    if (e.key === "e" || e.key === "E") {
       game.checkUserResponse("L");
     }
   })

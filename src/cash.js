@@ -15,6 +15,8 @@ class Cash {
     this.marked = marked;
     this.assetid = assetid;
     this.distance = distance;
+    //"U" for unrecognized, "O" for obstacle, "L" for life, "C" for points/cash/money
+    this.recognizedType = this.marked? "U" : assetid[0];  
    
   }
 
