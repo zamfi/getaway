@@ -9,16 +9,19 @@ import Physics from './physics.js';
 import Cash from './cash.js';
 import Car from './car.js';
 import assets from './assets.js';
+
+import speed from './physics.js'
+
 const lifeImgFolder = "./assets/images/life/";
 const obstacleImgFolder = "./assets/images/obstacle/";
 const moneyImgFolder = "./assets/images/money/";
 var ctr = 0;
-const T_width = (70+50)/2+15; //car width/2 + obstacle width/2 + small const: Used for avoiding obstacles
+const T_width = 80; //car width/2 + obstacle width/2 + small const: Used for avoiding obstacles
 const R_l = 150; // road lb in x; //100 pixels on each side for dead zone?
 const R_u = 350; // road ub in x;
 const Kp_obs = 0.03; //Kp for x-tracker on car for obstacle avoidance
 const Kp_getter = 0.01; //Kp for x-tracker on car to get life or cash
-const obj_buf = 75; //constant for when object goes behind car (1/2 of car len)
+const obj_buf = 75+40; //constant for when object goes behind car (1/2 of car len) + buffer
 const OBJECTTYPE = Object.freeze({ "obstacle": "O", "cash": "C", "life": "L" });
 var prev_time = null;
 var prev_object_y = null;
@@ -541,15 +544,15 @@ setRecognizedType(assetid,assetUserSpecifiedType){
     var y_rocks;
     var y_life;
     //console.info("Trying to find closest obj type")
-    if(this.cash && this.cash.length>0) //check Cash
+    if(this.cash && this.cash.length>0)// && this.cash[0].recognizedType != "U") //check Cash
     {      y_cash = this.cash[0].physics.y;     }//of the oldest cash created
       else {y_cash = -10000;} //a number that places it far away
 
-    if(this.rocks && this.rocks.length>0) //check Rock
+    if(this.rocks && this.rocks.length>0)// && this.rocks[0].recognizedType != "U") //check Rock
     {          y_rocks = this.rocks[0].physics.y;     }
       else {y_rocks = -10000;} //a number that places it far away
 
-    if(this.life && this.life.length>0) //check life
+    if(this.life && this.life.length>0)// && this.life[0].recognizedType != "U") //check life
     {          y_life = this.life[0].physics.y;     }
       else {y_life = -10000;} //a number that places it far away
 
@@ -562,16 +565,101 @@ setRecognizedType(assetid,assetUserSpecifiedType){
    //console.info("Controls: Closest type: ",ix_min);
    //console.info("Controls: Distance in y = ",dists_y[ix_min]);
 
-   if(dists_y[ix_min]>10000) //no spawned object ahead
-   {return 3;}
-   else {return ix_min;} //else return type of object ahead
-
+    if(dists_y[ix_min]>10000) //no spawned object ahead
+    {ix_min = 3; }
+    return ix_min;
+   
  } //end of closestObject
 
+  closestObjectAndLocation() {
+    //returns type of object closest to car (in front)
+    // 0: cash, 1: rock, 2: life, 3: no spawned object ahead
 
-rockAvoider() {
+    var y_cash;
+    var y_rocks;
+    var y_life;
+    var object_x=0; //x coordinate of closest object
+    var actual_type = 3;
+    var identified_type =3;		
+    //console.info("Trying to find closest obj type")
+    if(this.cash && this.cash.length>0) //check Cash existence
+    {      
+        if(this.cash[0].recognizedType != "U") //and if recognized 
+	{
+        y_cash = this.cash[0].physics.y;     
+	identified_type = (this.cash[0].recognizedType=="C")? 0 : ((this.cash[0].recognizedType=="O") ? 1 : 2);
+	object_x = this.cash[0].physics.x;
+	}
+    }//of the oldest cash created
+      else {y_cash = -10000;} //a number that places it far away
+
+    if(this.rocks && this.rocks.length>0) //check Rock
+    {          
+        if(this.rocks[0].recognizedType != "U") //and if recognized
+        {
+	y_rocks = this.rocks[0].physics.y;
+	identified_type = (this.rocks[0].recognizedType=="O")? 1 : ((this.rocks[0].recognizedType=="C") ? 0 : 2);
+        object_x = this.rocks[0].physics.x;      
+	}
+    }
+      else {y_rocks = -10000;} //a number that places it far away
+
+    if(this.life && this.life.length>0) //check life
+    {   
+        //console.info("Closest is life");       
+        if(this.life[0].recognizedType != "U") //and if recogd
+        {
+	y_life = this.life[0].physics.y;     
+	identified_type = (this.life[0].recognizedType=="L")? 2 : ((this.life[0].recognizedType=="C") ? 0 : 1);
+        object_x = this.life[0].physics.x; 
+	}
+    }
+      else {y_life = -10000;} //a number that places it far away
+
+    var y_car = this.assets.car.physics.y;
+    var dists_y = [10000*((y_car-y_cash)<=-obj_buf)+(y_car-y_cash)*((y_car-y_cash)>-obj_buf),
+                   10000*((y_car-y_rocks)<=-obj_buf)+(y_car-y_rocks)*((y_car-y_rocks)>-obj_buf),
+                   10000*((y_car-y_life)<=-obj_buf)+(y_car-y_life)*((y_car-y_life)>-obj_buf),
+                 ]; //if object is behind var, make this a large positive value
+    var ix_min = indexOfSmallest(dists_y);
+    actual_type = ix_min;	
+   //console.info("Controls: Closest type: ",ix_min);
+   //console.info("Controls: Distance in y = ",dists_y[ix_min]);
+
+    if(dists_y[ix_min]>10000) //no spawned object ahead
+    {ix_min = 3; object_x = 0;}//or whatever, not to be used }
+
+    /*	not correct as even unidentified objects get a type to them!
+    if(ix_min==0) //if closest object was a cash             
+    { 
+      identified_type = (this.cash[0].recognizedType=="C")? 0 : ((this.cash[0].recognizedType=="O") ? 1 : 2);
+      object_x = this.cash[0].physics.x;
+    }
+    if(ix_min==1) //if closest object was a rock
+    {
+        
+      identified_type = (this.rocks[0].recognizedType=="O")? 1 : ((this.rocks[0].recognizedType=="C") ? 0 : 2);
+      object_x = this.rocks[0].physics.x;  
+    }             
+    if(ix_min==2) //if closest object was a life
+    { 
+      identified_type = (this.life[0].recognizedType=="L")? 2 : ((this.life[0].recognizedType=="C") ? 0 : 1);
+      object_x = this.life[0].physics.x; 
+      console.info("Sending life x");   
+    }
+	*/
+	
+    return [actual_type,identified_type,object_x];
+   //if(dists_y[ix_min]>10000) //no spawned object ahead
+   //{return 3;}
+   //else {return ix_min;} //else return type of object ahead
+
+ } //end of closestObjectAndLocation
+
+
+rockAvoider(Ox) { //gets x coordinate of object to avoid
   var Cx = this.assets.car.physics.x;
-  var Ox = this.rocks[0].physics.x; //x of nearest rock
+  //var Ox = this.rocks[0].physics.x; //x of nearest rock
   var x_ref = Cx;
   if(Math.abs(Ox-Cx) >= T_width)
   {
@@ -619,15 +707,15 @@ var err_x = x_ref-Cx;
 
 } //end of rock avoider
 
-objectGetter(o_type) {
-  if(o_type==0) //Cash
+objectGetter(x_ref) { //directly gets x ref to go to in order to collect object
+  /*if(o_type==0) //Cash
   {
     var x_ref = this.cash[0].physics.x;
   }
   else if(o_type==2) //life
   {
     var x_ref = this.life[0].physics.x;
-  }
+  }*/
   var err_x = x_ref - this.assets.car.physics.x;
   if(err_x>=0)
       {
@@ -679,7 +767,7 @@ moveRandom(step){
         ctr++;
 
       }
-    }, 20000);
+    }, 12000); //20000
 
     setInterval(() => {
       this.randomizesprite();
@@ -693,14 +781,35 @@ moveRandom(step){
     setInterval(() => { //controls
     this.releaseControls(); //zero-order hold (release key)
     var closestObjectType;
-    closestObjectType = this.closestObject(); //get type of object that is closest
-    console.info("Controls: Closest object type = ",closestObjectType);
+    //closestObjectType = this.closestObject(); //get type of object that is closest
+    //console.info("Controls: Closest object type = ",closestObjectType);
 
-    // Add a flag for answered or not (and lower it) and execute control code
-    // only if the object has been recognized. Lower flag when done tracking.
+    // test new closestObjectCode
+    var returns;
+    returns = this.closestObjectAndLocation();
+    console.info("True type of closest obj= ",returns[0]);
+    console.info("Id'd type of closest obj= ",returns[1]);
+    console.info("x coordinate of closest obj = ",returns[2]);	
 
+    
+    // control based on identified object
+    if(returns[1]==1) //id'd as obstacle
+    {
+      this.rockAvoider(returns[2]);
+    }
+    else if(returns[1]==0 || returns[1]==2) //id'd as an object to get
+    {
+      this.objectGetter(returns[2]);
+    }
+    else
+    {
+      //do nothing //this.moveRandom(0.5);
+    }	
+	
+
+    
     //rock  avoider
-    if(closestObjectType==1) //obstacle
+    /*if(closestObjectType==1) //obstacle
     {
       this.rockAvoider();
     }
@@ -711,8 +820,8 @@ moveRandom(step){
     else
     {
       this.moveRandom(0.5);
-    }
-  }, 1000); //every 1s
+    }*/
+  }, 1000); //every 100ms
 
 //-----------------end AI agent code---------------
 
