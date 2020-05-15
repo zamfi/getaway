@@ -8,7 +8,7 @@
 #5. Distance Mark function
 #6. One thing marked at the time - need more details
 7. Interface panel - tied to time function, question
-    7.1 Display keyboard key icons next to item legend
+    #7.1 Display keyboard key icons next to item legend
     #7.2 Display the question - "What is the boxed item?"
     #7.3 Keyboard interface for providing input
         #7.3.1 hold frame color green
@@ -29,8 +29,9 @@
         7.4.4 if time elapses - give -ve feedback - blink frame red
         #7.4.5 isBoxed is a misnomer - 
         7.4.6 Make time bar aesthetically nice
-    7.5 Separate pane for the interface - look at the amendment document
+    #7.5 Separate pane for the interface - look at the amendment document
     #7.6 Move car all way down
+    #7.7 Give feedback for keyboard key presses - Q,W,E
 8. Box them based on two different criteria
     #8.1 Environment query - based on hard time constraint rather than probablity
     #8.2 Attention query -  based on probablity (existing one)
@@ -45,8 +46,11 @@
     9.3 Get the controller tied with gamespeed
 
 
-10. Distractor task panel
-    10.1 Arithmethic tasks
+#10. Distractor task panel
+    #10.1 Arithmethic tasks
+        #10.1.1 A subtraction task with 1 digit answer
+        #10.1.2 Green and Red hold for distractor panel for correct and wrong answer
+        #10.1.3 Set distractor task pause between tasks
 
 11. Data collection
     11.1 Number of obstacles, points and extra life

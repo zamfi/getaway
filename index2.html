@@ -25,31 +25,46 @@
           <canvas id="canvas" style="border: 20px solid black"></canvas>
         </div>
       </div>
-      
-      <div class="instructions">
-        <h2 class="title">Autonomous car simulator</h2>
-        <div id="myProgress">
-          Time remaining: <div id="myBarTime"></div> <div id="myBar"></div>
+      <div class = "column2">
+        <div class="distractortask" id ="distractortask">
+          <p id=num1>Num1</p>
+            <p>&emsp;-&emsp;</p>
+              <p id=num2>Num2</p>
+              <p>&emsp;=&emsp;</p>
+              <p id=num3>Num3</p>
         </div>
-        <div class="justify">
           
-          <div class="controls"></div>
+        <div class="instructions">
+          <!-- <h2 class="title">Autonomous car simulator</h2> -->
+          <div id="myProgress">
+            Time remaining: <div id="myBarTime"></div> <div id="myBar"></div>
+          </div>
           <h3 class="title" style="font-size:32px;">What is the boxed item?</h3>
-          <div class="obstacle-container">
-            <div class="obstacles" style="font-size:20px;" id="obstacle"></div>
-            <h4>Obstacle</h4> <i class="material-icons" style="font-size:60px;">filter_1</i>
+          <div class="justify">
+            
+            <div class="controls"></div>
+            
+            <div class="obstacle-container">
+              <div class="obstacles" style="font-size:20px;" id="obstacle"></div>
+              Obstacle 
+              <!-- <i class="material-icons" style="font-size:30px;">filter_1</i> -->
+              <div class="key" id="keyQ">Q</div>
+            </div>
+            <div class="cash-container">
+              <div class="cash"  style="font-size:20px;"  id="money"></div>
+              Points 
+              <!-- <i class="material-icons" style="font-size:30px;">filter_2</i> -->
+              <div class="key" id="keyW">W</div>
+            </div>
+            <div class="life-container">
+              <div class="life"  style="font-size:20px;"  id="life"></div>
+              Extra life 
+              <!-- <i class="material-icons" style="font-size:30px;">filter_3</i> -->
+              <div class="key pressed" id="keyE">E</div>
+            </div>
+            
           </div>
-          <div class="cash-container">
-            <div class="cash"  style="font-size:20px;"  id="money"></div>
-            <h4>Points</h4> <i class="material-icons" style="font-size:60px;">filter_2</i>
-          </div>
-          <div class="life-container">
-            <div class="life"  style="font-size:20px;"  id="life"></div>
-            <h4>Extra life</h4> <i class="material-icons" style="font-size:60px;">filter_3</i>
-          </div>
-          
         </div>
-        
         
       </div>
     </div>

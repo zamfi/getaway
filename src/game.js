@@ -29,6 +29,7 @@ const MAX_BOX_DISTANCE_RATIO = 0.4; //It will get boxed at a maximum distance of
 const NO_QUERY_TIME_WINDOW_FOR_ATT_QUERY = 3000;// in milliseconds
 const ENV_QUERY_INTERVAL = 30000;
 const EXP_PROB_TIME_CONSTANT = 8500;// in milliseconds
+const DISTRACTOR_TASK_PAUSE = 1500;// in milliseconds
 var prev_time = null;
 var prev_object_y = null;
 var max_time = 15;
@@ -66,7 +67,11 @@ class Game {
 
     this.timeOfLastEnvQuery = d.getTime();
     this.timeOfLastAttQuery = d.getTime();
+    this.num2 = 0; // An integer between 0 to 99
+    this.num3 = 0; // An integer between 0 to 9
+    this.num1 = 0;
     
+    this.newDistractorTask();
 
     for (var i = 0; i < this.numImgs; i++) {
       this.lifeImgLists.push(lifeImgFolder + "life (" + (i + 1).toString() + ").png");
@@ -77,6 +82,8 @@ class Game {
     document.getElementById("money").style["background-image"] = "url(\'" + this.moneyImgSrc + "\')";
     document.getElementById("life").style["background-image"] = "url(\'" + this.lifeImgSrc + "\')";
   }
+
+
   holdCanvas(blinkDuration,color) {
     var interval = window.setInterval(function () {
       document.getElementById("canvas").style["border"] = "20px solid "+color;
@@ -86,7 +93,19 @@ class Game {
       document.getElementById("canvas").style["border"] = "20px solid black";
       clearInterval(y);
     }, blinkDuration, interval);
-}
+  }
+  
+  holdDistractorCanvas(blinkDuration, color) {
+    var interval = window.setInterval(function () {
+      document.getElementById("distractortask").style["border"] = "20px solid " + color;
+    }, 5);
+
+    setTimeout(function (y) {
+      document.getElementById("distractortask").style["border"] = "20px solid black";
+      clearInterval(y);
+    }, blinkDuration, interval);
+  }
+
 blinkCanvas(blinkRate, blinkDuration,color) {
   var interval = window.setInterval(function () {
     if (document.getElementById("canvas").style["border"] != "20px solid "+color) {
@@ -142,7 +161,38 @@ setRecognizedType(assetid,assetUserSpecifiedType){
       default:
         console.log("Unrecognized asset type");
   }
-}
+  }
+
+  newDistractorTask() {
+    this.num2 = Math.floor(Math.random() * 100); // An integer between 0 to 99
+    this.num3 = Math.floor(Math.random() * 10); // An integer between 0 to 9
+    this.num1 = this.num2 + this.num3;
+    document.getElementById("num1").innerHTML = this.num1.toString();
+    document.getElementById("num2").innerHTML = this.num2.toString();
+    document.getElementById("num3").innerHTML = "???";
+  }
+
+  checkDistractorTaskAnswer(i) {
+    
+    if(this.num3>=0){ // if num3 is greater than 0 then , then the distractor task is active
+      if (i == this.num3) {
+        this.holdDistractorCanvas(DISTRACTOR_TASK_PAUSE, "green");
+        // Code to do things on correct answer to distractor task
+      }
+      else {
+        this.holdDistractorCanvas(DISTRACTOR_TASK_PAUSE, "red");
+        // Code to do things on wrong answer to distractor task
+      }
+      document.getElementById("num3").innerHTML = i.toString();
+      //this.num3 = -1; // set to inactive
+    }
+    //this.newDistractorTask();
+    var _this = this;
+    setTimeout(function () {
+      _this.newDistractorTask();
+    }, DISTRACTOR_TASK_PAUSE);
+    //setTimeout(this.newDistractorTask, DISTRACTOR_TASK_TIMEOUT);
+  }
   checkUserResponse(i) {
 
     if (this.boxed.length > 0 && this.activeResponse) {
