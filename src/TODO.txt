@@ -17,13 +17,13 @@
         #7.3.4 Map keys - Q, W, E
         #7.3.5 Get only one input per box and store it in boxedType variable (undecided, cash, life, obstacles)
         #7.3.6 When rendering cash, life, obstacles, 
-                #7.3.6.1 if asset.boxed is false, then auto-set asset.recognizedType to cash, life, obstacle
-                        else if asset.boxed is true, then set asset.recognizedType to undecided isUnrecognized
+                #7.3.6.1 #if asset.boxed is false, then auto-set asset.recognizedType to cash, life, obstacle
+                        #else if asset.boxed is true, then set asset.recognizedType to undecided isUnrecognized
                 #7.3.6.2 set asset.recognizedType to user input value
         7.3.7 Set Timeout distance, amd mark incorrect and red
     7.4 Bar for time remaining
-        7.4.1 Vary boxing distances (aka timeout for system recognition failure) only for attention query 
-                Other siwse fixed distance (1/3 down) - 3 car lengths?
+        #7.4.1 Vary boxing distances (aka timeout for system recognition failure) only for attention query 
+                #Other siwse fixed distance (1/3 down) - 3 car lengths?
         #7.4.2 Calculate time remaining based on speed and remaining distance
         #7.4.3 Visualize time bar - for time remaining
         7.4.4 if time elapses - give -ve feedback - blink frame red
@@ -32,13 +32,15 @@
     7.5 Separate pane for the interface - look at the amendment document
     #7.6 Move car all way down
 8. Box them based on two different criteria
-    8.1 Environment query - based on hard time constraint rather than probablity
-    8.2 Attention query -  based on probablity (existing one)
-    8.3 Deploy attention query only when Environment query is inactive
-        8.3.1 Environment query takes precedence
-        8.3.2 Should not be posed around a time window of the Env. query
-9. Car controller for driving this - PID
-    9.1 Controller triggered upon human identification for unknown objects
+    #8.1 Environment query - based on hard time constraint rather than probablity
+    #8.2 Attention query -  based on probablity (existing one)
+    #8.3 Deploy attention query only when Environment query is inactive
+        #8.3.1 Environment query takes precedence
+        #8.3.2 Should not be posed around a time window of the Env. query
+    8.4 Define probablity time constants and other coefficients and time interval parameters
+    
+#9. Car controller for driving this - PID
+    #9.1 Controller triggered upon human identification for unknown objects
     9.2 Deactivate controller once it has crossed timeout distance? (How would we calculate time left, should we calculate till threshold?)
     9.3 Get the controller tied with gamespeed
 
@@ -54,7 +56,7 @@
         11.2.3 (x,y) coords of all assets when a query and user i/p was recorded
         11.2.4 Time of change of icons
 
-
+12. Add termination condition
 
 
 

@@ -23,6 +23,12 @@ const Kp_obs = 0.03; //Kp for x-tracker on car for obstacle avoidance
 const Kp_getter = 0.01; //Kp for x-tracker on car to get life or cash
 const obj_buf = 75+40; //constant for when object goes behind car (1/2 of car len) + buffer
 const OBJECTTYPE = Object.freeze({ "obstacle": "O", "cash": "C", "life": "L" });
+
+const MIN_BOX_DISTANCE_RATIO = 0.1; //It will get boxed at a maximum distance of 0.3*Canvas Height from start
+const MAX_BOX_DISTANCE_RATIO = 0.4; //It will get boxed at a maximum distance of 0.3*Canvas Height from start
+const NO_QUERY_TIME_WINDOW_FOR_ATT_QUERY = 3000;// in milliseconds
+const ENV_QUERY_INTERVAL = 30000;
+const EXP_PROB_TIME_CONSTANT = 8500;// in milliseconds
 var prev_time = null;
 var prev_object_y = null;
 var max_time = 15;
@@ -55,6 +61,11 @@ class Game {
     this.assetidCounter = -1;
     this.activeResponse = false;
     this.stopBlink = false;
+
+    var d = new Date();
+
+    this.timeOfLastEnvQuery = d.getTime();
+    this.timeOfLastAttQuery = d.getTime();
     
 
     for (var i = 0; i < this.numImgs; i++) {
@@ -91,6 +102,14 @@ blinkCanvas(blinkRate, blinkDuration,color) {
   }, blinkDuration, interval);
 }
 
+  askAttentionQueryBasedOnAttentionProbFunction() {
+    var d = new Date();
+
+    var a = Math.random();
+    var thresh = 1-Math.exp(-1 * (d.getTime() - this.timeOfLastAttQuery) / EXP_PROB_TIME_CONSTANT);
+
+    return (a < thresh);
+ }
 setRecognizedType(assetid,assetUserSpecifiedType){
   var assetActualType = assetid[0];
   var i;
@@ -205,17 +224,17 @@ setRecognizedType(assetid,assetUserSpecifiedType){
       speed = 24;
       max_time = car_y /speed;
       var time_bar_length = ((car_y) - (object_y+object_height))/speed;
-      console.log("Time bar length: "+Math.floor(time_bar_length) + ", Speed: "+speed
-                + ", Car_y: "+car_y + ", Car_height: " +car_height
-                + ", Object_y: "+object_y + ", Object_height: " +object_height
-                + ", Prev_time: "+prev_time+ ", Prev_object_y: " +prev_object_y
-                + ", Curr_time: "+curr_time+ ", Object_y: " +object_y);
+      // console.log("Time bar length: "+Math.floor(time_bar_length) + ", Speed: "+speed
+      //           + ", Car_y: "+car_y + ", Car_height: " +car_height
+      //           + ", Object_y: "+object_y + ", Object_height: " +object_height
+      //           + ", Prev_time: "+prev_time+ ", Prev_object_y: " +prev_object_y
+      //           + ", Curr_time: "+curr_time+ ", Object_y: " +object_y);
       prev_object_y = object_y;
       prev_time = curr_time;
       var elem = document.getElementById("myBar");
       elem.style.width = ((time_bar_length/max_time)*100) + "%";
       document.getElementById("myBarTime").innerHTML = `${Math.floor(time_bar_length*10)/10+"s"}`;
-      console.log(Math.floor(time_bar_length*10)/10+"s");
+      //console.log(Math.floor(time_bar_length*10)/10+"s");
   }
 
   }
@@ -282,16 +301,32 @@ setRecognizedType(assetid,assetUserSpecifiedType){
   lifeProbablityFunction() {
     return (Math.random() > 0.5);
   }
-  obstacleBoxProbablityFunction() {
-    return (Math.random() > 0.5);
+  // obstacleBoxProbablityFunction() {
+  //   return (Math.random() > 0.5);
+  // }
+
+  // moneyBoxProbablityFunction() {
+  //   return (Math.random() > 0.5);
+  // }
+
+  // lifeBoxProbablityFunction() {
+  //   return (Math.random() > 0.5);
+  // }
+
+  objectTypeProbablityFunction() {
+    var a = Math.random();
+
+    if (a > 0 && a < 0.33)
+      return (OBJECTTYPE.obstacle);
+    else if (a >= 0.33 && a < 0.66)
+      return (OBJECTTYPE.life);
+    else
+      return (OBJECTTYPE.cash);
   }
 
-  moneyBoxProbablityFunction() {
-    return (Math.random() > 0.5);
-  }
-
-  lifeBoxProbablityFunction() {
-    return (Math.random() > 0.5);
+  boxDistanceProbablityFunction() {
+    // Uniform probablity between 0.1 and 0.4
+    return (MIN_BOX_DISTANCE_RATIO+Math.random()*(MAX_BOX_DISTANCE_RATIO-MIN_BOX_DISTANCE_RATIO));
   }
 
   
@@ -479,7 +514,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
   }
 
   end() {
-    if (this.assets.car.life <= 0) {
+    if (false) { //  TODO:Termination condition
       this.gameOver = true;
       this.assets.road.stop();
       this.draw();
@@ -493,7 +528,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
 
     this.rocks.push(new Obstacle(new Physics(
       Math.floor(Math.random() * 310) + 80,
-      -20),this.rockImgSrc,true,(OBJECTTYPE.obstacle+(++this.assetidCounter).toString()), 0.3
+      -20),this.rockImgSrc,bool_marked,(OBJECTTYPE.obstacle+(++this.assetidCounter).toString()), this.boxDistanceProbablityFunction()
     ));
     
   };
@@ -501,7 +536,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
   createLife(bool_marked) {
     this.life.push(new Life(new Physics(
       Math.floor(Math.random() * 310) + 80,
-      -20), this.lifeImgSrc, true, (OBJECTTYPE.life + (++this.assetidCounter).toString()),0.3
+      -20), this.lifeImgSrc, bool_marked, (OBJECTTYPE.life + (++this.assetidCounter).toString()), this.boxDistanceProbablityFunction()
     ));
     
   };
@@ -509,7 +544,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
   createCash(bool_marked) {
     this.cash.push(new Cash(new Physics(
       Math.floor(Math.random() * 310) + 80,
-      -20), this.moneyImgSrc, true, (OBJECTTYPE.cash + (++this.assetidCounter).toString()),0.3
+      -20), this.moneyImgSrc, bool_marked, (OBJECTTYPE.cash + (++this.assetidCounter).toString()), this.boxDistanceProbablityFunction()
     ));
     
   };
@@ -755,19 +790,37 @@ moveRandom(step){
 
     setInterval(() => {
       if (!this.gameOver) {
+        var d = new Date();
         var boxEmpty = Array.isArray(this.boxed) && !this.boxed.length;
-        if(ctr%3 == 0)
+        var askEnvQuery = boxEmpty && ((d.getTime() - this.timeOfLastEnvQuery) > ENV_QUERY_INTERVAL);
+        if (askEnvQuery)
         {
-          this.createRock( boxEmpty && this.obstacleBoxProbablityFunction());
+          console.log("Asking Environment Query: " + (d.getTime() - this.timeOfLastEnvQuery).toString());
+        this.timeOfLastEnvQuery = d.getTime();
         }
-        else if(ctr%3==1){
-          this.createCash(boxEmpty &&this.moneyBoxProbablityFunction());
+          
+        
+        var askAttQuery = boxEmpty // If no query is currently active
+          && !askEnvQuery // if Env query is not selected
+          && this.askAttentionQueryBasedOnAttentionProbFunction() // if we need to ask attention query based on probablity
+          && (d.getTime() - this.timeOfLastEnvQuery) > NO_QUERY_TIME_WINDOW_FOR_ATT_QUERY // if we have crossed a time window since last env query
+          && (this.timeOfLastEnvQuery + ENV_QUERY_INTERVAL - d.getTime()) > NO_QUERY_TIME_WINDOW_FOR_ATT_QUERY; // if we are far away from time window of future env query
+        if (askAttQuery)
+        {
+          console.log("Asking Attention Query:" + (d.getTime() - this.timeOfLastAttQuery).toString());
+          this.timeOfLastAttQuery = d.getTime();
         }
-        else if(ctr%3==2){
-          this.createLife(boxEmpty &&this.lifeBoxProbablityFunction());
+        
+        switch (this.objectTypeProbablityFunction())
+        {
+          case OBJECTTYPE.obstacle: this.createRock(askEnvQuery || askAttQuery);
+            break;
+          case OBJECTTYPE.life: this.createLife(askEnvQuery || askAttQuery);
+            break;
+          case OBJECTTYPE.cash: this.createCash(askEnvQuery || askAttQuery);
+            break;
         }
         ctr++;
-
       }
     }, 12000); //20000
 
@@ -789,9 +842,9 @@ moveRandom(step){
     // test new closestObjectCode
     var returns;
     returns = this.closestObjectAndLocation();
-    console.info("True type of closest obj= ",returns[0]);
-    console.info("Id'd type of closest obj= ",returns[1]);
-    console.info("x coordinate of closest obj = ",returns[2]);	
+    // console.info("True type of closest obj= ",returns[0]);
+    // console.info("Id'd type of closest obj= ",returns[1]);
+    // console.info("x coordinate of closest obj = ",returns[2]);	
 
     
     // control based on identified object
