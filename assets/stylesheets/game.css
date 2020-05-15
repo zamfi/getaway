@@ -83,6 +83,12 @@ html {
   align-items: center;
 }
 
+.time-bar-container {
+  
+  font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+  
+}
+
 
 .game-container {
   display: flex;
