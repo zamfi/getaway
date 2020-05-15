@@ -46,9 +46,10 @@
     
 #9. Car controller for driving this - PID
     #9.1 Controller triggered upon human identification for unknown objects
-    9.2 Deactivate controller once it has crossed timeout distance? (How would we calculate time left, should we calculate till threshold?)
-    9.3 Get the controller tied with gamespeed 
-    9.4 Activate controller for boxed objects with Attn query once we go below a specific time threshold
+    #9.2 Deploy EVIL controller once it has QUERY_TIMEOUT_FLAG - (How would we calculate time left, should we calculate till threshold?)
+    9.3 Get the controller tied with gamespeed
+        9.3.1 Add comments for changing them at tighe places using COMMENT_TAGS
+    #9.4 Activate controller for boxed objects with Attn query once we go below a specific time threshold
 
 
 #10. Distractor task panel
@@ -57,33 +58,31 @@
         #10.1.2 Green and Red hold for distractor panel for correct and wrong answer
         #10.1.3 Set distractor task pause between tasks
         10.1.4 Timer for this
+        10.1.5 User instructions for distractor tasks
 
 11. Data collection
     11.1 Number of obstacles, points and extra life
     11.2 Timelog of events 
-        11.2.1 Timed Generation log
-        11.2.2 Timed User input log 
+        11.2.1 Timed Generation log of different objects
+        11.2.2 Timed Log of all User inputs
         11.2.3 (x,y) coords of all assets when a query and user i/p was recorded
         11.2.4 Time of change of icons
 
 12. Add termination condition
     12.1 - Time-based (Game ends after a specific time)
 13. Random scoring function
+    13.1 Display the score
+14. Take parameters as JSON file
 
 
 
-
-
-
-
-
-
-
-*. Take parameters as JSON file
-*. Ready JS for mechanical turk
+15. Ready JS for mechanical turk
+    - Get assignmentID, Hit ID, and worker ID from URL
     - jsTurk(?) - jsPsych
-*. Scaling to different display resolution
-
+16. Check for display resolution
+    - Give error if disp resolution doesn't meet the minimum criteria
+17. Video Instructions?
+    - How does it work with mTurk
 
 
 

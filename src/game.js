@@ -23,6 +23,7 @@ const Kp_obs = 0.03; //Kp for x-tracker on car for obstacle avoidance
 const Kp_getter = 0.01; //Kp for x-tracker on car to get life or cash
 const obj_buf = 75+40; //constant for when object goes behind car (1/2 of car len) + buffer
 const OBJECTTYPE = Object.freeze({ "obstacle": "O", "cash": "C", "life": "L" });
+const QUERYTYPE = Object.freeze({ "attention": "A", "environment": "E"});
 
 const MIN_BOX_DISTANCE_RATIO = 0.1; //It will get boxed at a maximum distance of 0.3*Canvas Height from start
 const MAX_BOX_DISTANCE_RATIO = 0.4; //It will get boxed at a maximum distance of 0.3*Canvas Height from start
@@ -30,6 +31,10 @@ const NO_QUERY_TIME_WINDOW_FOR_ATT_QUERY = 3000;// in milliseconds
 const ENV_QUERY_INTERVAL = 30000;
 const EXP_PROB_TIME_CONSTANT = 8500;// in milliseconds
 const DISTRACTOR_TASK_PAUSE = 1500;// in milliseconds
+
+const QUERY_TIMEOUT = 4000; // in milliseconds
+const CONTROLLER_SAMPLING_TIME = 500;// in milliseconds
+
 var prev_time = null;
 var prev_object_y = null;
 var max_time = 15;
@@ -62,6 +67,9 @@ class Game {
     this.assetidCounter = -1;
     this.activeResponse = false;
     this.stopBlink = false;
+    this.queryType = null;
+    this.queryTimeElapsed = false;
+    this.queryUserResponded = false;
 
     var d = new Date();
 
@@ -196,6 +204,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
   checkUserResponse(i) {
 
     if (this.boxed.length > 0 && this.activeResponse) {
+      this.queryUserResponded = true;
           if (this.boxed[0][0] == i) {
               //Blink green
             //document.getElementById("canvas").style["border"] = "20px solid green";
@@ -217,7 +226,11 @@ setRecognizedType(assetid,assetUserSpecifiedType){
   }
 
 
-  updateTimeBar(){
+  updateTimeBar() {
+    
+    //Check if boxed is empty; if it is; disbale "What is boxed item?" and time bar and do nothing
+    //else run everything below
+
     var objectType = this.closestObject(); // 0: cash, 1: rock, 2: life, 3: no spawned object ahead
 
     var object_y = null;
@@ -285,6 +298,21 @@ setRecognizedType(assetid,assetUserSpecifiedType){
       elem.style.width = ((time_bar_length/max_time)*100) + "%";
       document.getElementById("myBarTime").innerHTML = `${Math.floor(time_bar_length*10)/10+"s"}`;
       //console.log(Math.floor(time_bar_length*10)/10+"s");
+      if (time_bar_length <= 4 && time_bar_length > 1
+        && !this.queryTimeElapsed
+        && !this.queryUserResponded
+      ) {
+        if (this.queryType == QUERYTYPE.attention) {
+          this.setRecognizedType(this.boxed[0], this.boxed[0][0]);
+          // Makes the controller act SAFE
+        }
+        else if(this.queryType == QUERYTYPE.environment) {
+          this.setRecognizedType(this.boxed[0], this.boxed[0][0] == OBJECTTYPE.obstacle ? OBJECTTYPE.life : OBJECTTYPE.obstacle); 
+          // Makes the controller act EVIL
+        }
+        // Write code on what needs to be done after Query time is elapsed
+        this.queryTimeElapsed = true;
+      }
   }
 
   }
@@ -301,6 +329,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
         console.log(object.assetid);
         if (boxed.indexOf(object.assetid) != -1) {
           boxed.splice(boxed.indexOf(object.assetid), 1);
+          
         }
         console.log("After removing");
         console.log(boxed);
@@ -317,6 +346,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
         console.log(object.assetid);
         if (boxed.indexOf(object.assetid) != -1) {
           boxed.splice(boxed.indexOf(object.assetid), 1);
+          
         }
         console.log("After removing");
         console.log(boxed);
@@ -333,6 +363,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
         console.log(object.assetid);
         if (boxed.indexOf(object.assetid) != -1) {
           boxed.splice(boxed.indexOf(object.assetid), 1);
+          
         }
         console.log("After removing");
         console.log(boxed);
@@ -389,6 +420,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
         array.splice(array.indexOf(object), 1);
         if (boxed.indexOf(object.assetid) != -1){
           boxed.splice(boxed.indexOf(object.assetid), 1);
+          
          }
       }
     }
@@ -398,6 +430,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
         array.splice(array.indexOf(object), 1);
         if (boxed.indexOf(object.assetid) != -1) {
           boxed.splice(boxed.indexOf(object.assetid), 1);
+          
         }
       }
     }
@@ -407,6 +440,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
         array.splice(array.indexOf(object), 1);
         if (boxed.indexOf(object.assetid) != -1) {
           boxed.splice(boxed.indexOf(object.assetid), 1);
+          
         }
       }
     }
@@ -462,6 +496,10 @@ setRecognizedType(assetid,assetUserSpecifiedType){
                 this.boxed.push(asset.assetid);
                 this.blinkCanvas(30, 300, "blue");
                 this.activeResponse = true;
+                this.queryTimeElapsed = false;
+                this.queryUserResponded = false;
+                
+
               }
             // console.log(this.boxed);
             }
@@ -752,17 +790,17 @@ rockAvoider(Ox) { //gets x coordinate of object to avoid
   {
     //don't move
     x_ref = Cx;
-    console.info("Decision: Not moving, obs diff x= ",Ox-Cx, "T_width=",T_width);
+    //console.info("Decision: Not moving, obs diff x= ",Ox-Cx, "T_width=",T_width);
   }
   else { //got to move
     if(Ox>=Cx){ //obstacle on right
       if(Cx-R_l>=T_width-(Ox-Cx)){ //room on left?
         x_ref = Ox-T_width;
-        console.info("Decision: Obs right, Going from left of obstacle ");
+        //console.info("Decision: Obs right, Going from left of obstacle ");
       }
       else{ //no room on left
         x_ref = Ox+T_width;
-        console.info("Decision: Obs right, Going from right of obstacle ");
+        //console.info("Decision: Obs right, Going from right of obstacle ");
       }
     } //end if Ox>=Cx
     else //obstacle on left
@@ -770,12 +808,12 @@ rockAvoider(Ox) { //gets x coordinate of object to avoid
       if(R_u-Cx > T_width-(Cx-Ox)) //room on right?
       {
         x_ref = Ox+T_width;
-        console.info("Decision: Obs left, Going from right of obstacle ");
+        //console.info("Decision: Obs left, Going from right of obstacle ");
       }
       else //no room on right
       {
         x_ref = Ox-T_width;
-        console.info("Decision: Obs left, Going from left of obstacle ");
+        //console.info("Decision: Obs left, Going from left of obstacle ");
       }
     } //end of else obstacle on left
   } //end of else got to move
@@ -784,12 +822,12 @@ var err_x = x_ref-Cx;
   if(err_x>0)
   {
       this.moveRight(Kp_obs*err_x);
-      console.info("Controls: Right, ref = ",x_ref, "err=",err_x);
+      //console.info("Controls: Right, ref = ",x_ref, "err=",err_x);
   }
   else if(err_x<0) //0 is to not move
   {
       this.moveLeft(-Kp_obs*err_x);
-      console.info("Controls: Left, ref = ",x_ref, "err=",err_x);
+      //console.info("Controls: Left, ref = ",x_ref, "err=",err_x);
   }
 
 } //end of rock avoider
@@ -823,12 +861,12 @@ moveRandom(step){
 
      if(Math.random() >= 0.5)
      {
-     console.info("Controls: ","Random Left");
+     //console.info("Controls: ","Random Left");
      this.moveLeft(step);
      }
      else
      {
-     console.info("Controls: ","Random Right");
+     //console.info("Controls: ","Random Right");
      this.moveRight(step);
      }
 } //end move random
@@ -853,13 +891,20 @@ moveRandom(step){
         var askAttQuery = boxEmpty // If no query is currently active
           && !askEnvQuery // if Env query is not selected
           && this.askAttentionQueryBasedOnAttentionProbFunction() // if we need to ask attention query based on probablity
-          && (d.getTime() - this.timeOfLastEnvQuery) > NO_QUERY_TIME_WINDOW_FOR_ATT_QUERY // if we have crossed a time window since last env query
-          && (this.timeOfLastEnvQuery + ENV_QUERY_INTERVAL - d.getTime()) > NO_QUERY_TIME_WINDOW_FOR_ATT_QUERY; // if we are far away from time window of future env query
+          && (d.getTime() - this.timeOfLastEnvQuery) > 0.5*NO_QUERY_TIME_WINDOW_FOR_ATT_QUERY // if we have crossed a time window since last env query
+          && (this.timeOfLastEnvQuery + ENV_QUERY_INTERVAL - d.getTime()) > 0.5*NO_QUERY_TIME_WINDOW_FOR_ATT_QUERY; // if we are far away from time window of future env query
         if (askAttQuery)
         {
           console.log("Asking Attention Query:" + (d.getTime() - this.timeOfLastAttQuery).toString());
           this.timeOfLastAttQuery = d.getTime();
         }
+        
+        if (askAttQuery)
+          this.queryType = QUERYTYPE.attention;
+        else if (askEnvQuery)
+          this.queryType = QUERYTYPE.environment;
+        else
+          this.queryType = null;
         
         switch (this.objectTypeProbablityFunction())
         {
@@ -926,7 +971,7 @@ moveRandom(step){
     {
       this.moveRandom(0.5);
     }*/
-  }, 1000); //every 100ms
+  }, CONTROLLER_SAMPLING_TIME); //every 100ms
 
 //-----------------end AI agent code---------------
 
