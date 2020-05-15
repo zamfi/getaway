@@ -9,6 +9,7 @@ import Physics from './physics.js';
 import Cash from './cash.js';
 import Car from './car.js';
 import assets from './assets.js';
+import gameSpeed from './physics.js';
 const lifeImgFolder = "./assets/images/life/";
 const obstacleImgFolder = "./assets/images/obstacle/";
 const moneyImgFolder = "./assets/images/money/";
@@ -127,7 +128,8 @@ setRecognizedType(assetid,assetUserSpecifiedType){
           if (this.boxed[0][0] == i) {
               //Blink green
             //document.getElementById("canvas").style["border"] = "20px solid green";
-            this.holdCanvas(2000,"green");
+            this.holdCanvas(2000, "green");
+            // Write functions to do whatever has to be done when user enteres correct response
             this.activeResponse = false;
             this.setRecognizedType(this.boxed[0],i);
 
@@ -136,6 +138,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
             //Blink red
             //document.getElementById("canvas").style["border"] = "20px solid red";
             this.holdCanvas(2000, "red");
+            // Write functions to do whatever has to be done when user enteres wrong response
             this.activeResponse = false;
             this.setRecognizedType(this.boxed[0],i)
           }
@@ -196,7 +199,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
     if(speed!=null){
       var d = new Date();
       
-      speed = (object_y - prev_object_y) / (0.001*(curr_time - prev_time));
+      //speed = (object_y - prev_object_y) / (0.001*(curr_time - prev_time));
       speed = 24;
       max_time = car_y /speed;
       var time_bar_length = ((car_y) - (object_y+object_height))/speed;
@@ -368,7 +371,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
        
             if (this.boxed.indexOf(asset.assetid) == -1) {
             // console.log("After adding");
-              if (this.boxed.length == 0){
+              if (this.boxed.length == 0){ // Ensures that only one object is queried upon at a time, even if multiple objects are unrecognized
                 this.boxed.push(asset.assetid);
                 this.blinkCanvas(30, 300, "blue");
                 this.activeResponse = true;
@@ -488,7 +491,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
 
     this.rocks.push(new Obstacle(new Physics(
       Math.floor(Math.random() * 310) + 80,
-      -20),this.rockImgSrc,true,("O"+(++this.assetidCounter).toString()), 0.3
+      -20),this.rockImgSrc,true,(OBJECTTYPE.obstacle+(++this.assetidCounter).toString()), 0.3
     ));
     
   };
@@ -496,7 +499,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
   createLife(bool_marked) {
     this.life.push(new Life(new Physics(
       Math.floor(Math.random() * 310) + 80,
-      -20), this.lifeImgSrc, true, ("L" + (++this.assetidCounter).toString()),0.3
+      -20), this.lifeImgSrc, true, (OBJECTTYPE.life + (++this.assetidCounter).toString()),0.3
     ));
     
   };
@@ -504,7 +507,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
   createCash(bool_marked) {
     this.cash.push(new Cash(new Physics(
       Math.floor(Math.random() * 310) + 80,
-      -20), this.moneyImgSrc, true, ("C" + (++this.assetidCounter).toString()),0.3
+      -20), this.moneyImgSrc, true, (OBJECTTYPE.cash + (++this.assetidCounter).toString()),0.3
     ));
     
   };

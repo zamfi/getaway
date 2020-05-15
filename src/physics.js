@@ -1,3 +1,4 @@
+const gameSpeed = 0.4;
 class Physics {
   constructor(x, y, w = null, h = null) {
     this.x = x;
@@ -10,7 +11,7 @@ class Physics {
     this.dUp = 0;
     this.dx = this.dx.bind(this);
     this.dy = this.dy.bind(this);
-    this.speed = 0.4;
+    this.speed = gameSpeed;
   }
 
   dx() {
