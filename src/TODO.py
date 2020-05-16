@@ -34,7 +34,7 @@
     #7.5 Separate pane for the interface - look at the amendment document
     #7.6 Move car all way down
     #7.7 Give feedback for keyboard key presses - Q,W,E
-    7.8 Diasble time remaining, and other query related parameters when there is no active question
+    #7.8 Diasble time remaining, and other query related parameters when there is no active question
 8. Box them based on two different criteria
     #8.1 Environment query - based on hard time constraint rather than probablity
     #8.2 Attention query -  based on probablity (existing one)

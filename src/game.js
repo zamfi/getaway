@@ -232,8 +232,25 @@ setRecognizedType(assetid,assetUserSpecifiedType){
     //else run everything below
     var boxEmpty = Array.isArray(this.boxed) && !this.boxed.length;
 
-    if (!boxEmpty && !this.queryTimeElapsed)
+    if (boxEmpty || this.queryTimeElapsed || this.queryUserResponded)
     {
+      //document.getElementById("myProgress").innerHTML = '';
+      document.getElementById("myProgress").style.display = "none";
+      document.getElementById("keyW").style.display = "none";
+      document.getElementById("keyQ").style.display = "none";
+      document.getElementById("keyE").style.display = "none";
+      document.getElementById("maintaskQuestion").style.display = "none";
+     }
+
+    else //if (!boxEmpty && !this.queryTimeElapsed)
+    {
+      //document.getElementById("myProgress").innerHTML ='<div class ="time-bar-container">Time remaining: <div id="myBarTime"></div> </div > <div id="myBar"></div>';
+      document.getElementById("myProgress").style.display = "block";
+      document.getElementById("keyW").style.display = "flex";
+      document.getElementById("keyQ").style.display = "flex";
+      document.getElementById("keyE").style.display = "flex";
+      document.getElementById("maintaskQuestion").style.display = "block";
+
       var objectType = this.closestObject(); // 0: cash, 1: rock, 2: life, 3: no spawned object ahead
 
       var object_y = null;
@@ -301,7 +318,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
         elem.style.width = (((time_bar_length-0.001*QUERY_TIMEOUT)/max_time)*100) + "%";
         document.getElementById("myBarTime").innerHTML = `${Math.floor((time_bar_length-0.001*QUERY_TIMEOUT)*10)/10+"s"}`;
         //console.log(Math.floor(time_bar_length*10)/10+"s");
-        if (time_bar_length <= 0.001*QUERY_TIMEOUT && time_bar_length > 0.1
+        if (time_bar_length < 0.001*QUERY_TIMEOUT && time_bar_length > 0.1
           && !this.queryTimeElapsed
           && !this.queryUserResponded
         ) {
