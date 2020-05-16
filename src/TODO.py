@@ -20,15 +20,15 @@
                 #7.3.6.1 #if asset.boxed is false, then auto-set asset.recognizedType to cash, life, obstacle
                         #else if asset.boxed is true, then set asset.recognizedType to undecided isUnrecognized
                 #7.3.6.2 set asset.recognizedType to user input value
-        7.3.7 Set Timeout distance, amd mark incorrect and red
+        #7.3.7 Set Timeout distance, amd mark incorrect and red
     7.4 Bar for time remaining
         #7.4.1 Vary boxing distances (aka timeout for system recognition failure) only for attention query 
                 #Other siwse fixed distance (1/3 down) - 3 car lengths?
         #7.4.2 Calculate time remaining based on speed and remaining distance
         #7.4.3 Visualize time bar - for time remaining
-        7.4.4 if time elapses - give -ve feedback - blink frame red
-            7.4.4.1 Use QUERY_TIMEOUT(4000ms) to decide this
-            7.4.4.2 Update a QUERY_TIMEOUT_FLAG
+       # 7.4.4 if time elapses - give -ve feedback - blink frame red
+            #7.4.4.1 Use QUERY_TIMEOUT(4000ms) to decide this
+            #7.4.4.2 Update a QUERY_TIMEOUT_FLAG
         #7.4.5 isBoxed is a misnomer - 
         7.4.6 Make time bar aesthetically nice
     #7.5 Separate pane for the interface - look at the amendment document

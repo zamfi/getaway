@@ -230,90 +230,96 @@ setRecognizedType(assetid,assetUserSpecifiedType){
     
     //Check if boxed is empty; if it is; disbale "What is boxed item?" and time bar and do nothing
     //else run everything below
+    var boxEmpty = Array.isArray(this.boxed) && !this.boxed.length;
 
-    var objectType = this.closestObject(); // 0: cash, 1: rock, 2: life, 3: no spawned object ahead
-
-    var object_y = null;
-    var object_height = null;
-    const car_y = this.assets.car.physics.y;
-    const car_height = this.assets.car.physics.height ? this.assets.car.physics.height : this.assets.car.sprite.height*this.assets.car.sprite.height_scale;
-    var speed = 0;
-    var curr_time;
-    if(objectType == 0){
-      object_height = this.cash[0].physics.height ? this.cash[0].physics.height : this.cash[0].sprite.height*this.cash[0].sprite.height_scale;
-      object_y = this.cash[0].physics.y;
-      curr_time = (new Date()).getTime();
-    }
-    else if(objectType == 1){
-      object_height = this.rocks[0].physics.height ? this.rocks[0].physics.height : this.rocks[0].sprite.height*this.rocks[0].sprite.height_scale;
-      object_y = this.rocks[0].physics.y;
-      curr_time = (new Date()).getTime();
-    }
-    else if(objectType == 2){
-      object_height = this.life[0].physics.height ? this.life[0].physics.height : this.life[0].sprite.height*this.life[0].sprite.height_scale;
-      object_y = this.life[0].physics.y;
-      curr_time = (new Date()).getTime();
-    }
-
-    
-    if(prev_time == null)
+    if (!boxEmpty && !this.queryTimeElapsed)
     {
-      speed = null;
-      prev_time = curr_time;
-    }
-    if(prev_object_y == null){
-      speed = null;
-      prev_object_y = object_y;
-      prev_time = curr_time;
-    }
+      var objectType = this.closestObject(); // 0: cash, 1: rock, 2: life, 3: no spawned object ahead
 
-    if(object_y == null)
-    {
-      speed = null;
-    }
-
-    if(object_y!=null && prev_object_y!=null){
-        if(object_y < prev_object_y){
-          speed = null;
-          prev_object_y = object_y;
-          prev_time = curr_time;
-        }
-    }
-
-    if(speed!=null){
-      var d = new Date();
-      
-      //speed = (object_y - prev_object_y) / (0.001*(curr_time - prev_time));
-      speed = 24;
-      max_time = car_y /speed;
-      var time_bar_length = ((car_y) - (object_y+object_height))/speed;
-      // console.log("Time bar length: "+Math.floor(time_bar_length) + ", Speed: "+speed
-      //           + ", Car_y: "+car_y + ", Car_height: " +car_height
-      //           + ", Object_y: "+object_y + ", Object_height: " +object_height
-      //           + ", Prev_time: "+prev_time+ ", Prev_object_y: " +prev_object_y
-      //           + ", Curr_time: "+curr_time+ ", Object_y: " +object_y);
-      prev_object_y = object_y;
-      prev_time = curr_time;
-      var elem = document.getElementById("myBar");
-      elem.style.width = ((time_bar_length/max_time)*100) + "%";
-      document.getElementById("myBarTime").innerHTML = `${Math.floor(time_bar_length*10)/10+"s"}`;
-      //console.log(Math.floor(time_bar_length*10)/10+"s");
-      if (time_bar_length <= 4 && time_bar_length > 1
-        && !this.queryTimeElapsed
-        && !this.queryUserResponded
-      ) {
-        if (this.queryType == QUERYTYPE.attention) {
-          this.setRecognizedType(this.boxed[0], this.boxed[0][0]);
-          // Makes the controller act SAFE
-        }
-        else if(this.queryType == QUERYTYPE.environment) {
-          this.setRecognizedType(this.boxed[0], this.boxed[0][0] == OBJECTTYPE.obstacle ? OBJECTTYPE.life : OBJECTTYPE.obstacle); 
-          // Makes the controller act EVIL
-        }
-        // Write code on what needs to be done after Query time is elapsed
-        this.queryTimeElapsed = true;
+      var object_y = null;
+      var object_height = null;
+      const car_y = this.assets.car.physics.y;
+      const car_height = this.assets.car.physics.height ? this.assets.car.physics.height : this.assets.car.sprite.height*this.assets.car.sprite.height_scale;
+      var speed = 0;
+      var curr_time;
+      if(objectType == 0){
+        object_height = this.cash[0].physics.height ? this.cash[0].physics.height : this.cash[0].sprite.height*this.cash[0].sprite.height_scale;
+        object_y = this.cash[0].physics.y;
+        curr_time = (new Date()).getTime();
       }
-  }
+      else if(objectType == 1){
+        object_height = this.rocks[0].physics.height ? this.rocks[0].physics.height : this.rocks[0].sprite.height*this.rocks[0].sprite.height_scale;
+        object_y = this.rocks[0].physics.y;
+        curr_time = (new Date()).getTime();
+      }
+      else if(objectType == 2){
+        object_height = this.life[0].physics.height ? this.life[0].physics.height : this.life[0].sprite.height*this.life[0].sprite.height_scale;
+        object_y = this.life[0].physics.y;
+        curr_time = (new Date()).getTime();
+      }
+
+      
+      if(prev_time == null)
+      {
+        speed = null;
+        prev_time = curr_time;
+      }
+      if(prev_object_y == null){
+        speed = null;
+        prev_object_y = object_y;
+        prev_time = curr_time;
+      }
+
+      if(object_y == null)
+      {
+        speed = null;
+      }
+
+      if(object_y!=null && prev_object_y!=null){
+          if(object_y < prev_object_y){
+            speed = null;
+            prev_object_y = object_y;
+            prev_time = curr_time;
+          }
+      }
+
+      if(speed!=null){
+        var d = new Date();
+        
+        //speed = (object_y - prev_object_y) / (0.001*(curr_time - prev_time));
+        speed = 24;
+        max_time = car_y /speed;
+        var time_bar_length = ((car_y) - (object_y+object_height))/speed;
+        // console.log("Time bar length: "+Math.floor(time_bar_length) + ", Speed: "+speed
+        //           + ", Car_y: "+car_y + ", Car_height: " +car_height
+        //           + ", Object_y: "+object_y + ", Object_height: " +object_height
+        //           + ", Prev_time: "+prev_time+ ", Prev_object_y: " +prev_object_y
+        //           + ", Curr_time: "+curr_time+ ", Object_y: " +object_y);
+        prev_object_y = object_y;
+        prev_time = curr_time;
+        var elem = document.getElementById("myBar");
+        elem.style.width = (((time_bar_length-0.001*QUERY_TIMEOUT)/max_time)*100) + "%";
+        document.getElementById("myBarTime").innerHTML = `${Math.floor((time_bar_length-0.001*QUERY_TIMEOUT)*10)/10+"s"}`;
+        //console.log(Math.floor(time_bar_length*10)/10+"s");
+        if (time_bar_length <= 0.001*QUERY_TIMEOUT && time_bar_length > 0.1
+          && !this.queryTimeElapsed
+          && !this.queryUserResponded
+        ) {
+          if (this.queryType == QUERYTYPE.attention) {
+            this.setRecognizedType(this.boxed[0], this.boxed[0][0]);
+            // Makes the controller act SAFE
+          }
+          else if(this.queryType == QUERYTYPE.environment) {
+            this.setRecognizedType(this.boxed[0], this.boxed[0][0] == OBJECTTYPE.obstacle ? OBJECTTYPE.life : OBJECTTYPE.obstacle); 
+            // Makes the controller act EVIL
+          }
+          // Write code on what needs to be done after Query time is elapsed
+          this.holdCanvas(2000, "red");
+          this.activeResponse = false;
+          this.queryTimeElapsed = true;
+        }
+        }
+    }
 
   }
 
