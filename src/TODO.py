@@ -21,6 +21,7 @@
                         #else if asset.boxed is true, then set asset.recognizedType to undecided isUnrecognized
                 #7.3.6.2 set asset.recognizedType to user input value
         #7.3.7 Set Timeout distance, amd mark incorrect and red
+        7.3.8 What happens when user enters wrong input to attention query
     7.4 Bar for time remaining
         #7.4.1 Vary boxing distances (aka timeout for system recognition failure) only for attention query 
                 #Other siwse fixed distance (1/3 down) - 3 car lengths?
@@ -41,7 +42,7 @@
     #8.3 Deploy attention query only when Environment query is inactive
         #8.3.1 Environment query takes precedence
         #8.3.2 Should not be posed around a time window of the Env. query
-    8.4 Define probablity time constants and other coefficients and time interval parameters
+    8.4 Define probablity time constants and other coefficients and time interval parameters and randomize timings
         8.4.1 Use pilots for tuning this right
     
 #9. Car controller for driving this - PID
@@ -57,30 +58,43 @@
         #10.1.1 A subtraction task with 1 digit answer
         #10.1.2 Green and Red hold for distractor panel for correct and wrong answer
         #10.1.3 Set distractor task pause between tasks
-        10.1.4 Timer for this
+        #10.1.4 Timer for this
         10.1.5 User instructions for distractor tasks
 
 11. Data collection
-    11.1 Number of obstacles, points and extra life
+    #11.1 Number of obstacles, points and extra life
     11.2 Timelog of events 
-        11.2.1 Timed Generation log of different objects
-        11.2.2 Timed Log of all User inputs
-        11.2.3 (x,y) coords of all assets when a query and user i/p was recorded
-        11.2.4 Time of change of icons
+        #11.2.1 Timed Generation log of different objects
+        #11.2.2 Timed Log and result of all User inputs
+            #11.2 .2 .1 Correct main query
+            #11.2 .2 .2 Wrong main query
+            #11.2 .2 .3 Correct dist query
+            #11.2.2.4 wrong dist query
+        #11.2.3 Time of change of icons
+        11.2 .4 Score at regular time
+        #11.2 .5 Time of new distractor query
+        #11.2 .6 Time of new main query
+        #11.2 .7 Timeout of main query
+        #11.2 .8 Timeout of dist query
+        #11.2 .9 asset car collision
+        #11.2.10 asset pass canvas
 
-12. Add termination condition
-    12.1 - Time-based (Game ends after a specific time)
+12. Add termination code
+    #12.1 - Time-based (Game ends after a specific time)
+    12.2 Stop controller
+    12.3 Write log to file
 13. Random scoring function
     13.1 Display the score
 14. Take parameters as JSON file
+15. Check for display resolution
+    #15.1 Give error if disp resolution doesn't meet the minimum criteria
+    15.2 Make the error aesthetically nice
 
 
-
-15. Ready JS for mechanical turk
+16. Ready JS for mechanical turk
     - Get assignmentID, Hit ID, and worker ID from URL
     - jsTurk(?) - jsPsych
-16. Check for display resolution
-    - Give error if disp resolution doesn't meet the minimum criteria
+
 17. Video Instructions?
     - How does it work with mTurk
 

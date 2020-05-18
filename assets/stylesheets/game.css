@@ -108,7 +108,7 @@ html {
   height: 250px;
   width: 600px;
   background-color: rgba(255,255,255, 0.6);
-  margin-bottom: 200px;
+  
   font-size: 64px;
   display: flex;
   justify-content: center;
@@ -275,6 +275,18 @@ html {
 }
 
 #myBar {
+  width: 1%;
+  height: 30px;
+  background-color: green;
+}
+
+#distractorProgress {
+  margin-top: 10px;
+  width: 100%;
+  background-color: grey;
+}
+
+#distractorBar {
   width: 1%;
   height: 30px;
   background-color: green;

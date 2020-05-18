@@ -11,7 +11,7 @@ import Car from './car.js';
 import assets from './assets.js';
 
 import speed from './physics.js'
-
+const fs = require('fs'); 
 const lifeImgFolder = "./assets/images/life/";
 const obstacleImgFolder = "./assets/images/obstacle/";
 const moneyImgFolder = "./assets/images/money/";
@@ -34,6 +34,49 @@ const DISTRACTOR_TASK_PAUSE = 1500;// in milliseconds
 
 const QUERY_TIMEOUT = 4000; // in milliseconds
 const CONTROLLER_SAMPLING_TIME = 500;// in milliseconds
+const DISTRACTOR_TASK_TIME = 5000; // in milliseconds
+const GAME_TIME = 2 * 60000;// in milliseconds
+
+const MIN_RES_WIDTH = 1280;
+const MIN_RES_HEIGHT = 800;
+
+var datalogWritten = false;
+//Event types
+
+
+// const EVENTTYPE = Object.freeze({
+//   "CREATE_ASSET": 0,
+//   "CORRECT_BOXED_RESPONSE": 1,
+//   "WRONG_BOXED_RESPONSE": 2,
+//   "TIMEOUT_BOXED_RESPONSE": 3,
+//   "CORRECT_DIST_RESPONSE": 4,
+//   "WRONG_DIST_RESPONSE": 5,
+//   "TIMEOUT_DIST_RESPONSE": 6,
+//   "RANDOMIZE_ICON": 7,
+//   "ENV_QUERY_CREATED": 8,
+//   "ATT_QUERY_CREATED": 9,
+//   "ENV_QUERY_ACTIVE": 10,
+//   "ATT_QUERY_ACTIVE": 11
+// });
+
+const EVENTTYPE = Object.freeze({
+  "CREATE_ASSET": "CREATE_ASSET",
+  "CORRECT_BOXED_RESPONSE": "CORRECT_BOXED_RESPONSE",
+  "WRONG_BOXED_RESPONSE": "WRONG_BOXED_RESPONSE",
+  "TIMEOUT_BOXED_RESPONSE": "TIMEOUT_BOXED_RESPONSE",
+  "CORRECT_DIST_RESPONSE": "CORRECT_DIST_RESPONSE",
+  "WRONG_DIST_RESPONSE": "WRONG_DIST_RESPONSE",
+  "TIMEOUT_DIST_RESPONSE": "TIMEOUT_DIST_RESPONSE",
+  "RANDOMIZE_ICON": "RANDOMIZE_ICON",
+  "ENV_QUERY_CREATED": "ENV_QUERY_CREATED",
+  "ATT_QUERY_CREATED": "ATT_QUERY_CREATED",
+  "NEW_MAIN_QUERY": "NEW_MAIN_QUERY",
+  "ASSET_PASSED_CANVAS": "ASSET_PASSED_CANVAS",
+  "ASSET_CAR_COLLIDED": "ASSET_CAR_COLLIDED",
+  "NEW_DIST_QUERY": "NEW_DIST_QUERY",
+  "GAME_OVER": "GAME_OVER",
+  "GAME_START":"GAME_START"
+});
 
 var prev_time = null;
 var prev_object_y = null;
@@ -75,9 +118,12 @@ class Game {
 
     this.timeOfLastEnvQuery = d.getTime();
     this.timeOfLastAttQuery = d.getTime();
+    this.timeOfLastDistractorTask = d.getTime();
+    this.startTime = GAME_TIME*2; // Some high value greater than game time
     this.num2 = 0; // An integer between 0 to 99
     this.num3 = 0; // An integer between 0 to 9
     this.num1 = 0;
+    this.distractorTaskActive = true;
     
     this.newDistractorTask();
 
@@ -89,7 +135,12 @@ class Game {
     document.getElementById("obstacle").style["background-image"] = "url(\'" + this.rockImgSrc + "\')";
     document.getElementById("money").style["background-image"] = "url(\'" + this.moneyImgSrc + "\')";
     document.getElementById("life").style["background-image"] = "url(\'" + this.lifeImgSrc + "\')";
+
+    
+
   }
+
+  
 
 
   holdCanvas(blinkDuration,color) {
@@ -172,12 +223,16 @@ setRecognizedType(assetid,assetUserSpecifiedType){
   }
 
   newDistractorTask() {
+    var d = new Date();
     this.num2 = Math.floor(Math.random() * 100); // An integer between 0 to 99
     this.num3 = Math.floor(Math.random() * 10); // An integer between 0 to 9
     this.num1 = this.num2 + this.num3;
     document.getElementById("num1").innerHTML = this.num1.toString();
     document.getElementById("num2").innerHTML = this.num2.toString();
     document.getElementById("num3").innerHTML = "???";
+    this.timeOfLastDistractorTask = d.getTime();
+
+    this.logEvent(EVENTTYPE.NEW_DIST_QUERY, this.num1.toString() + "-" + this.num2.toString() + " = ???");
   }
 
   checkDistractorTaskAnswer(i) {
@@ -186,18 +241,22 @@ setRecognizedType(assetid,assetUserSpecifiedType){
       if (i == this.num3) {
         this.holdDistractorCanvas(DISTRACTOR_TASK_PAUSE, "green");
         // Code to do things on correct answer to distractor task
+        this.logEvent(EVENTTYPE.CORRECT_DIST_RESPONSE, this.num1.toString()+"-"+this.num2.toString()+"="+i.toString());
       }
       else {
         this.holdDistractorCanvas(DISTRACTOR_TASK_PAUSE, "red");
+        this.logEvent(EVENTTYPE.WRONG_DIST_RESPONSE, this.num1.toString() + "-" + this.num2.toString() + "=" + i.toString());
         // Code to do things on wrong answer to distractor task
       }
       document.getElementById("num3").innerHTML = i.toString();
       //this.num3 = -1; // set to inactive
     }
     //this.newDistractorTask();
+    this.distractorTaskActive = false;
     var _this = this;
     setTimeout(function () {
       _this.newDistractorTask();
+      _this.distractorTaskActive = true;
     }, DISTRACTOR_TASK_PAUSE);
     //setTimeout(this.newDistractorTask, DISTRACTOR_TASK_TIMEOUT);
   }
@@ -211,7 +270,8 @@ setRecognizedType(assetid,assetUserSpecifiedType){
             this.holdCanvas(2000, "green");
             // Write functions to do whatever has to be done when user enteres correct response
             this.activeResponse = false;
-            this.setRecognizedType(this.boxed[0],i);
+            this.setRecognizedType(this.boxed[0], i);
+            this.logEvent(EVENTTYPE.CORRECT_BOXED_RESPONSE, i+"-"+this.boxed[0]);
 
           }
           else {
@@ -220,10 +280,38 @@ setRecognizedType(assetid,assetUserSpecifiedType){
             this.holdCanvas(2000, "red");
             // Write functions to do whatever has to be done when user enteres wrong response
             this.activeResponse = false;
-            this.setRecognizedType(this.boxed[0],i)
+            this.setRecognizedType(this.boxed[0], i)
+            this.logEvent(EVENTTYPE.WRONG_BOXED_RESPONSE, i + "-" + this.boxed[0]);
           }
       }
   }
+
+  updateDistractorTimeBar() {
+
+      var d = new Date();
+
+    if (this.distractorTaskActive) {
+      var time_bar_length = (DISTRACTOR_TASK_TIME - (d.getTime() - this.timeOfLastDistractorTask))/1000;
+        
+      var elem = document.getElementById("distractorBar");
+      elem.style.width = ((time_bar_length / (DISTRACTOR_TASK_TIME*0.001)) * 100) + "%";
+      document.getElementById("distractorBarTime").innerHTML = `${Math.floor((time_bar_length) * 10) / 10 + "s"}`;
+      //console.log(Math.floor(time_bar_length*10)/10+"s");
+      
+      if (time_bar_length < 0.05) {
+        this.holdDistractorCanvas(DISTRACTOR_TASK_PAUSE, "red");
+        this.distractorTaskActive = false;
+        this.logEvent(EVENTTYPE.TIMEOUT_DIST_RESPONSE, this.num1.toString()+"-"+this.num2.toString()+" = ???");
+        
+
+        var _this = this;
+        setTimeout(function () {
+          _this.newDistractorTask();
+          _this.distractorTaskActive = true;
+        }, DISTRACTOR_TASK_PAUSE);
+      }
+    }
+    }
 
 
   updateTimeBar() {
@@ -334,6 +422,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
           this.holdCanvas(2000, "red");
           this.activeResponse = false;
           this.queryTimeElapsed = true;
+          this.logEvent(EVENTTYPE.TIMEOUT_BOXED_RESPONSE,  "U-"+this.boxed[0]);
         }
         }
     }
@@ -341,7 +430,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
   }
 
   // hit detection for objects
-  static checkCollision(car, object, array, assets,boxed) {
+  static checkCollision(car, object, array, assets,boxed,_this) {
     if (object instanceof Obstacle) {
       if (Util.collide_with_scale(car, object)) {
         car.hitObstacle();
@@ -352,6 +441,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
         console.log(object.assetid);
         if (boxed.indexOf(object.assetid) != -1) {
           boxed.splice(boxed.indexOf(object.assetid), 1);
+          _this.logEvent(EVENTTYPE.ASSET_CAR_COLLIDED, object.assetid);
           
         }
         console.log("After removing");
@@ -369,6 +459,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
         console.log(object.assetid);
         if (boxed.indexOf(object.assetid) != -1) {
           boxed.splice(boxed.indexOf(object.assetid), 1);
+          _this.logEvent(EVENTTYPE.ASSET_CAR_COLLIDED, object.assetid);
           
         }
         console.log("After removing");
@@ -386,6 +477,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
         console.log(object.assetid);
         if (boxed.indexOf(object.assetid) != -1) {
           boxed.splice(boxed.indexOf(object.assetid), 1);
+          _this.logEvent(EVENTTYPE.ASSET_CAR_COLLIDED, object.assetid);
           
         }
         console.log("After removing");
@@ -435,7 +527,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
 
   
   // checks if item passed canvas height to delete
-  static checkCanvas(object, array, boxed) {
+  static checkCanvas(object, array, boxed,_this) {
 
     if (object instanceof Life) {
       
@@ -443,6 +535,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
         array.splice(array.indexOf(object), 1);
         if (boxed.indexOf(object.assetid) != -1){
           boxed.splice(boxed.indexOf(object.assetid), 1);
+          _this.logEvent(EVENTTYPE.ASSET_PASSED_CANVAS, object.assetid);
           
          }
       }
@@ -453,6 +546,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
         array.splice(array.indexOf(object), 1);
         if (boxed.indexOf(object.assetid) != -1) {
           boxed.splice(boxed.indexOf(object.assetid), 1);
+          _this.logEvent(EVENTTYPE.ASSET_PASSED_CANVAS, object.assetid);
           
         }
       }
@@ -463,6 +557,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
         array.splice(array.indexOf(object), 1);
         if (boxed.indexOf(object.assetid) != -1) {
           boxed.splice(boxed.indexOf(object.assetid), 1);
+          _this.logEvent(EVENTTYPE.ASSET_PASSED_CANVAS, object.assetid);
           
         }
       }
@@ -521,7 +616,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
                 this.activeResponse = true;
                 this.queryTimeElapsed = false;
                 this.queryUserResponded = false;
-                
+                this.logEvent(EVENTTYPE.NEW_MAIN_QUERY, asset.assetid);
 
               }
             // console.log(this.boxed);
@@ -566,6 +661,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
     document.getElementById("obstacle").style["background-image"] = "url(\'" + this.rockImgSrc + "\')";
     document.getElementById("money").style["background-image"] = "url(\'" + this.moneyImgSrc + "\')";
     document.getElementById("life").style["background-image"] = "url(\'" + this.lifeImgSrc + "\')";
+    this.logEvent(EVENTTYPE.RANDOMIZE_ICON, this.lifeImgSrc + ":" + this.moneyImgSrc + ":" + this.rockImgSrc);
   }
 
   draw() {
@@ -581,21 +677,21 @@ setRecognizedType(assetid,assetUserSpecifiedType){
 
         // check collision for rocks
         this.rocks.forEach(el => {
-          Game.checkCollision(this.assets.car, el, this.rocks,this.assets,this.boxed);
-          Game.checkCanvas(el, this.rocks, this.boxed);
+          Game.checkCollision(this.assets.car, el, this.rocks,this.assets,this.boxed,this);
+          Game.checkCanvas(el, this.rocks, this.boxed,this);
         })
 
         // check collision for life
 
         this.life.forEach(el => {
-          Game.checkCollision(this.assets.car, el, this.life,this.assets,this.boxed);
-          Game.checkCanvas(el, this.life,this.boxed);
+          Game.checkCollision(this.assets.car, el, this.life,this.assets,this.boxed,this);
+          Game.checkCanvas(el, this.life,this.boxed,this);
         })
 
         // check collision for life
         this.cash.forEach(el => {
-          Game.checkCollision(this.assets.car, el, this.cash, this.assets,this.boxed);
-          Game.checkCanvas(el, this.cash,this.boxed);
+          Game.checkCollision(this.assets.car, el, this.cash, this.assets,this.boxed,this);
+          Game.checkCanvas(el, this.cash,this.boxed,this);
         })
 
         this.life.forEach(el => {
@@ -625,38 +721,75 @@ setRecognizedType(assetid,assetUserSpecifiedType){
   }
 
   end() {
-    if (false) { //  TODO:Termination condition
+    var d = new Date();
+    
+    if (d.getTime() - this.startTime > GAME_TIME) { //  TODO:Termination condition
+      this.logEvent(EVENTTYPE.GAME_OVER, "");
       this.gameOver = true;
       this.assets.road.stop();
+      this.activeResponse = false;
+      this.distractorTaskActive = false;
       this.draw();
       document.getElementById("slow").innerHTML = `Too Slow!`;
       document.getElementById("how").style.visibility = "hidden";
       document.getElementById("welcome").style.display = null;
     }
+    if (d.getTime() - this.startTime > GAME_TIME && !datalogWritten) {
+      console.log(this.dataLog);
+      datalogWritten = true;
+      //Code to write to a server data log file goes here
+    }
   }
 
   createRock(bool_marked) {
 
+    var boxDist = this.boxDistanceProbablityFunction();
     this.rocks.push(new Obstacle(new Physics(
       Math.floor(Math.random() * 310) + 80,
-      -20),this.rockImgSrc,bool_marked,(OBJECTTYPE.obstacle+(++this.assetidCounter).toString()), this.boxDistanceProbablityFunction()
+      -20),this.rockImgSrc,bool_marked,(OBJECTTYPE.obstacle+(++this.assetidCounter).toString()), boxDist
     ));
-    
+
+    //DATA_LOG
+    this.logEvent(EVENTTYPE.CREATE_ASSET, OBJECTTYPE.obstacle + this.assetidCounter.toString());
+    if (this.queryType == QUERYTYPE.environment) {
+      this.logEvent(EVENTTYPE.ENV_QUERY_CREATED, OBJECTTYPE.obstacle + this.assetidCounter.toString() + ":" + boxDist);
+    }
+    else if (this.queryType == QUERYTYPE.attention) {
+      this.logEvent(EVENTTYPE.ATT_QUERY_CREATED, OBJECTTYPE.obstacle + this.assetidCounter.toString() + ":" + boxDist);
+    }
   };
 
   createLife(bool_marked) {
+    var boxDist = this.boxDistanceProbablityFunction();
     this.life.push(new Life(new Physics(
       Math.floor(Math.random() * 310) + 80,
-      -20), this.lifeImgSrc, bool_marked, (OBJECTTYPE.life + (++this.assetidCounter).toString()), this.boxDistanceProbablityFunction()
+      -20), this.lifeImgSrc, bool_marked, (OBJECTTYPE.life + (++this.assetidCounter).toString()), boxDist
     ));
-    
+    //DATA_LOG
+    this.logEvent(EVENTTYPE.CREATE_ASSET, OBJECTTYPE.life + this.assetidCounter.toString());
+    if (this.queryType == QUERYTYPE.environment) {
+      this.logEvent(EVENTTYPE.ENV_QUERY_CREATED, OBJECTTYPE.life + this.assetidCounter.toString() + ":" + boxDist);
+    }
+    else if (this.queryType == QUERYTYPE.attention) {
+      this.logEvent(EVENTTYPE.ATT_QUERY_CREATED, OBJECTTYPE.life + this.assetidCounter.toString() + ":" + boxDist);
+    }
   };
 
   createCash(bool_marked) {
+    var boxDist = this.boxDistanceProbablityFunction();
     this.cash.push(new Cash(new Physics(
       Math.floor(Math.random() * 310) + 80,
-      -20), this.moneyImgSrc, bool_marked, (OBJECTTYPE.cash + (++this.assetidCounter).toString()), this.boxDistanceProbablityFunction()
+      -20), this.moneyImgSrc, bool_marked, (OBJECTTYPE.cash + (++this.assetidCounter).toString()), boxDist
     ));
+
+    //DATA_LOG
+    this.logEvent(EVENTTYPE.CREATE_ASSET, OBJECTTYPE.cash + this.assetidCounter.toString());
+    if (this.queryType == QUERYTYPE.environment) {
+      this.logEvent(EVENTTYPE.ENV_QUERY_CREATED, OBJECTTYPE.cash + this.assetidCounter.toString() + ":" + boxDist);
+    }
+    else if (this.queryType == QUERYTYPE.attention) {
+      this.logEvent(EVENTTYPE.ATT_QUERY_CREATED, OBJECTTYPE.cash + this.assetidCounter.toString() + ":" + boxDist);
+    }
     
   };
 
@@ -879,6 +1012,15 @@ objectGetter(x_ref) { //directly gets x ref to go to in order to collect object
 
 } //end of object getter
 
+  
+  logEvent(eventtype, eventdata) {
+    if (!this.gameOver) {
+      var d = new Date();
+      this.dataLog += (d.getTime()).toString() + "," + eventtype + "," + eventdata + '\n';
+    }
+  
+}  
+  
 moveRandom(step){
   //move randomly
 
@@ -895,112 +1037,128 @@ moveRandom(step){
 } //end move random
 
   start() {
-    this.gameOver = false;
-    document.getElementById("welcome").style.display="none";
-    this.assets.car.resetLife();
 
-    setInterval(() => {
-      if (!this.gameOver) {
-        var d = new Date();
-        var boxEmpty = Array.isArray(this.boxed) && !this.boxed.length;
-        var askEnvQuery = boxEmpty && ((d.getTime() - this.timeOfLastEnvQuery) > ENV_QUERY_INTERVAL);
-        if (askEnvQuery)
-        {
-          console.log("Asking Environment Query: " + (d.getTime() - this.timeOfLastEnvQuery).toString());
-        this.timeOfLastEnvQuery = d.getTime();
-        }
+    var dstart = new Date();
+    this.gameOver = false;
+    this.startTime = dstart.getTime();
+    document.getElementById("welcome").style.display = "none";
+    this.assets.car.resetLife();
+    this.logEvent(EVENTTYPE.GAME_START, "");
+    console.log("Screen Res - Width:" + screen.width + "Height:" + screen.height);
+    if (screen.width >= MIN_RES_WIDTH-1 && screen.height >= MIN_RES_HEIGHT-1) {
+      setInterval(() => {
+        if (!this.gameOver) {
+          var d = new Date();
+          var boxEmpty = Array.isArray(this.boxed) && !this.boxed.length;
+          var askEnvQuery = boxEmpty && ((d.getTime() - this.timeOfLastEnvQuery) > ENV_QUERY_INTERVAL);
+          if (askEnvQuery) {
+            console.log("Asking Environment Query: " + (d.getTime() - this.timeOfLastEnvQuery).toString());
+            this.timeOfLastEnvQuery = d.getTime();
+          }
           
         
-        var askAttQuery = boxEmpty // If no query is currently active
-          && !askEnvQuery // if Env query is not selected
-          && this.askAttentionQueryBasedOnAttentionProbFunction() // if we need to ask attention query based on probablity
-          && (d.getTime() - this.timeOfLastEnvQuery) > 0.5*NO_QUERY_TIME_WINDOW_FOR_ATT_QUERY // if we have crossed a time window since last env query
-          && (this.timeOfLastEnvQuery + ENV_QUERY_INTERVAL - d.getTime()) > 0.5*NO_QUERY_TIME_WINDOW_FOR_ATT_QUERY; // if we are far away from time window of future env query
-        if (askAttQuery)
-        {
-          console.log("Asking Attention Query:" + (d.getTime() - this.timeOfLastAttQuery).toString());
-          this.timeOfLastAttQuery = d.getTime();
-        }
+          var askAttQuery = boxEmpty // If no query is currently active
+            && !askEnvQuery // if Env query is not selected
+            && this.askAttentionQueryBasedOnAttentionProbFunction() // if we need to ask attention query based on probablity
+            && (d.getTime() - this.timeOfLastEnvQuery) > 0.5 * NO_QUERY_TIME_WINDOW_FOR_ATT_QUERY // if we have crossed a time window since last env query
+            && (this.timeOfLastEnvQuery + ENV_QUERY_INTERVAL - d.getTime()) > 0.5 * NO_QUERY_TIME_WINDOW_FOR_ATT_QUERY; // if we are far away from time window of future env query
+          if (askAttQuery) {
+            console.log("Asking Attention Query:" + (d.getTime() - this.timeOfLastAttQuery).toString());
+            this.timeOfLastAttQuery = d.getTime();
+          }
         
-        if (askAttQuery)
-          this.queryType = QUERYTYPE.attention;
-        else if (askEnvQuery)
-          this.queryType = QUERYTYPE.environment;
-        else
-          this.queryType = null;
+          if (askAttQuery)
+            this.queryType = QUERYTYPE.attention;
+          else if (askEnvQuery)
+            this.queryType = QUERYTYPE.environment;
+          else
+            this.queryType = null;
         
-        switch (this.objectTypeProbablityFunction())
-        {
-          case OBJECTTYPE.obstacle: this.createRock(askEnvQuery || askAttQuery);
-            break;
-          case OBJECTTYPE.life: this.createLife(askEnvQuery || askAttQuery);
-            break;
-          case OBJECTTYPE.cash: this.createCash(askEnvQuery || askAttQuery);
-            break;
+          switch (this.objectTypeProbablityFunction()) {
+            case OBJECTTYPE.obstacle: this.createRock(askEnvQuery || askAttQuery);
+              break;
+            case OBJECTTYPE.life: this.createLife(askEnvQuery || askAttQuery);
+              break;
+            case OBJECTTYPE.cash: this.createCash(askEnvQuery || askAttQuery);
+              break;
+          }
+          ctr++;
         }
-        ctr++;
-      }
-    }, 12000); //20000
+      }, 12000); //20000
 
-    setInterval(() => {
-      this.randomizesprite();
-    }, 84000); //what is the right interval for this?
+      setInterval(() => {
+        this.randomizesprite();
+      }, 84000); //what is the right interval for this?
     
-    setInterval(() => {
-      this.updateTimeBar();
-    }, 50);
+      setInterval(() => {
+        this.updateTimeBar();
+      }, 50);
+      setInterval(() => {
+        this.updateDistractorTimeBar();
+      }, 50);
 
-//--------------------AI agent---------------------
-    setInterval(() => { //controls
-    this.releaseControls(); //zero-order hold (release key)
-    var closestObjectType;
-    //closestObjectType = this.closestObject(); //get type of object that is closest
-    //console.info("Controls: Closest object type = ",closestObjectType);
 
-    // test new closestObjectCode
-    var returns;
-    returns = this.closestObjectAndLocation();
-    // console.info("True type of closest obj= ",returns[0]);
-    // console.info("Id'd type of closest obj= ",returns[1]);
-    // console.info("x coordinate of closest obj = ",returns[2]);	
+      // setInterval(() => {
+      //   console.log(this.dataLog);
+      // }, 50000);
+
+      //--------------------AI agent---------------------
+      setInterval(() => { //controls
+        this.releaseControls(); //zero-order hold (release key)
+        var closestObjectType;
+        //closestObjectType = this.closestObject(); //get type of object that is closest
+        //console.info("Controls: Closest object type = ",closestObjectType);
+
+        // test new closestObjectCode
+        var returns;
+        returns = this.closestObjectAndLocation();
+        // console.info("True type of closest obj= ",returns[0]);
+        // console.info("Id'd type of closest obj= ",returns[1]);
+        // console.info("x coordinate of closest obj = ",returns[2]);	
 
     
-    // control based on identified object
-    if(returns[1]==1) //id'd as obstacle
-    {
-      this.rockAvoider(returns[2]);
-    }
-    else if(returns[1]==0 || returns[1]==2) //id'd as an object to get
-    {
-      this.objectGetter(returns[2]);
-    }
-    else
-    {
-      //do nothing //this.moveRandom(0.5);
-    }	
+        // control based on identified object
+        if (returns[1] == 1) //id'd as obstacle
+        {
+          this.rockAvoider(returns[2]);
+        }
+        else if (returns[1] == 0 || returns[1] == 2) //id'd as an object to get
+        {
+          this.objectGetter(returns[2]);
+        }
+        else {
+          //do nothing //this.moveRandom(0.5);
+        }
 	
 
     
-    //rock  avoider
-    /*if(closestObjectType==1) //obstacle
-    {
-      this.rockAvoider();
+        //rock  avoider
+        /*if(closestObjectType==1) //obstacle
+        {
+          this.rockAvoider();
+        }
+        else if(closestObjectType==0 || closestObjectType==2) //object to get
+        {
+          this.objectGetter(closestObjectType);
+        }
+        else
+        {
+          this.moveRandom(0.5);
+        }*/
+      }, CONTROLLER_SAMPLING_TIME); //every 100ms
+
+      //-----------------end AI agent code---------------
+
+      this.draw();
+      this.assets.road.move();
+
     }
-    else if(closestObjectType==0 || closestObjectType==2) //object to get
-    {
-      this.objectGetter(closestObjectType);
+    else {
+      this.gameOver = true;
+      document.getElementById("slow").innerHTML = `You need a minimum display resolution of 1280x800 to take part in this study`;
+      document.getElementById("how").style.visibility = "hidden";
+      document.getElementById("welcome").style.display = null;
     }
-    else
-    {
-      this.moveRandom(0.5);
-    }*/
-  }, CONTROLLER_SAMPLING_TIME); //every 100ms
-
-//-----------------end AI agent code---------------
-
-    this.draw();
-    this.assets.road.move();
-
   }
 
 
