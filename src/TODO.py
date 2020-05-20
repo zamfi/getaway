@@ -44,6 +44,7 @@
         #8.3.2 Should not be posed around a time window of the Env. query
     8.4 Define probablity time constants and other coefficients and time interval parameters and randomize timings
         8.4.1 Use pilots for tuning this right
+    8.5 Have a query type array
     
 #9. Car controller for driving this - PID
     #9.1 Controller triggered upon human identification for unknown objects
@@ -51,6 +52,7 @@
     9.3 Get the controller tied with gamespeed
         9.3.1 Add comments for changing them at tighe places using COMMENT_TAGS
     #9.4 Activate controller for boxed objects with Attn query once we go below a specific time threshold
+    
 
 
 #10. Distractor task panel
@@ -85,6 +87,7 @@
     12.3 Write log to file
 13. Random scoring function
     13.1 Display the score
+    13.2 Should the user be able to disambiguate between attention and env query
 14. Take parameters as JSON file
 15. Check for display resolution
     #15.1 Give error if disp resolution doesn't meet the minimum criteria

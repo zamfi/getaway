@@ -28,13 +28,14 @@ const QUERYTYPE = Object.freeze({ "attention": "A", "environment": "E"});
 const MIN_BOX_DISTANCE_RATIO = 0.1; //It will get boxed at a maximum distance of 0.3*Canvas Height from start
 const MAX_BOX_DISTANCE_RATIO = 0.4; //It will get boxed at a maximum distance of 0.3*Canvas Height from start
 const NO_QUERY_TIME_WINDOW_FOR_ATT_QUERY = 3000;// in milliseconds
-const ENV_QUERY_INTERVAL = 30000;
+const ENV_QUERY_INTERVAL = 30000; // in milliseconds
 const EXP_PROB_TIME_CONSTANT = 8500;// in milliseconds
-const DISTRACTOR_TASK_PAUSE = 1500;// in milliseconds
+
 
 const QUERY_TIMEOUT = 4000; // in milliseconds
 const CONTROLLER_SAMPLING_TIME = 500;// in milliseconds
 const DISTRACTOR_TASK_TIME = 5000; // in milliseconds
+const DISTRACTOR_TASK_PAUSE = 1500;// in milliseconds
 const GAME_TIME = 2 * 60000;// in milliseconds
 
 const MIN_RES_WIDTH = 1280;
@@ -114,6 +115,7 @@ class Game {
     this.queryTimeElapsed = false;
     this.queryUserResponded = false;
 
+
     var d = new Date();
 
     this.timeOfLastEnvQuery = d.getTime();
@@ -124,6 +126,8 @@ class Game {
     this.num3 = 0; // An integer between 0 to 9
     this.num1 = 0;
     this.distractorTaskActive = true;
+
+    this.dataLog = "";
     
     this.newDistractorTask();
 
@@ -730,7 +734,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
       this.activeResponse = false;
       this.distractorTaskActive = false;
       this.draw();
-      document.getElementById("slow").innerHTML = `Too Slow!`;
+      document.getElementById("slow").innerHTML = `Game Over!`;
       document.getElementById("how").style.visibility = "hidden";
       document.getElementById("welcome").style.display = null;
     }
