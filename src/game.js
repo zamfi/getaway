@@ -27,14 +27,15 @@ const QUERYTYPE = Object.freeze({ "attention": "A", "environment": "E"});
 
 const MIN_BOX_DISTANCE_RATIO = 0.1; //It will get boxed at a maximum distance of 0.3*Canvas Height from start
 const MAX_BOX_DISTANCE_RATIO = 0.4; //It will get boxed at a maximum distance of 0.3*Canvas Height from start
-const NO_QUERY_TIME_WINDOW_FOR_ATT_QUERY = 3000;// in milliseconds
-const ENV_QUERY_INTERVAL = 30000; // in milliseconds
+const NO_QUERY_TIME_WINDOW_FOR_ENV_QUERY = 3000;// in milliseconds
+const ATT_QUERY_INTERVAL = 10000; // in milliseconds
 const EXP_PROB_TIME_CONSTANT = 8500;// in milliseconds
+const QUERY_TIMEOUT = 4000; // in milliseconds 
+const OBJECT_CREATION_INTERVAL = 2500;
 
-
-const QUERY_TIMEOUT = 4000; // in milliseconds
+//Distractor task stuffs
 const CONTROLLER_SAMPLING_TIME = 500;// in milliseconds
-const DISTRACTOR_TASK_TIME = 5000; // in milliseconds
+const DISTRACTOR_TASK_TIME = 5000; //Also the timeout for distractor tasl // in milliseconds
 const DISTRACTOR_TASK_PAUSE = 1500;// in milliseconds
 const GAME_TIME = 2 * 60000;// in milliseconds
 
@@ -121,6 +122,9 @@ class Game {
     this.timeOfLastEnvQuery = d.getTime();
     this.timeOfLastAttQuery = d.getTime();
     this.timeOfLastDistractorTask = d.getTime();
+    this.timeOfEnvQueryPlanning = -1; //Time at which env query's random interval duration was defined
+    this.randomIthObjectForEnvQuery = 100000000; //Some high value //Pick the ith object starting this object creation cycle (0 this one)
+    this.objectCounterForEnvQuery = -1;
     this.startTime = GAME_TIME*2; // Some high value greater than game time
     this.num2 = 0; // An integer between 0 to 99
     this.num3 = 0; // An integer between 0 to 9
@@ -184,14 +188,54 @@ blinkCanvas(blinkRate, blinkDuration,color) {
   }, blinkDuration, interval);
 }
 
-  askAttentionQueryBasedOnAttentionProbFunction() {
+askEnvironmentQueryBasedOnEnvironmentProbFunction_deprecated() {
     var d = new Date();
 
-    var a = Math.random();
-    var thresh = 1-Math.exp(-1 * (d.getTime() - this.timeOfLastAttQuery) / EXP_PROB_TIME_CONSTANT);
+    // var a = Math.random();
+    // var thresh = 1-Math.exp(-1 * (d.getTime() - this.timeOfLastAttQuery) / EXP_PROB_TIME_CONSTANT);
+ if(this.timeOfEnvQueryPlanning<0 && 
+  this.timeOfLastAttQuery>this.timeOfLastEnvQuery &&
+  (d.getTime() - this.timeOfLastAttQuery) > 0.5 * NO_QUERY_TIME_WINDOW_FOR_ENV_QUERY ){ //If this is negative that means that we are yet to plan the environment query
 
-    return (a < thresh);
+   var durationLeft =  this.timeOfLastAttQuery + ATT_QUERY_INTERVAL - d.getTime() - 0.5 * NO_QUERY_TIME_WINDOW_FOR_ENV_QUERY;
+   if(durationLeft >0 )
+   {
+      this.randomTimeIntervalEnvQuery = Math.random() * durationLeft; //Uniform sampling
+      console.log("Random time interval is "+this.randomTimeIntervalEnvQuery*0.001+" seconds.");
+      this.timeOfEnvQueryPlanning = d.getTime();
+   }
+    return(false);
  }
+
+  if(d.getTime() - this.timeOfEnvQueryPlanning > this.randomTimeIntervalEnvQuery)
+  {
+      this.timeOfEnvQueryPlanning = -1;
+      return(true);
+  }
+    
+ }
+
+ askEnvironmentQueryBasedOnEnvironmentProbFunction() {
+  var d = new Date();
+
+  // var a = Math.random();
+  // var thresh = 1-Math.exp(-1 * (d.getTime() - this.timeOfLastAttQuery) / EXP_PROB_TIME_CONSTANT);
+if(this.timeOfEnvQueryPlanning<0 && this.timeOfLastAttQuery>this.timeOfLastEnvQuery){ //If this is negative that means that we are yet to plan the environment query
+
+  var NumObjectsBetweenWindows = floor((ATT_QUERY_INTERVAL - 2*QUERY_TIMEOUT)/OBJECT_CREATION_INTERVAL) ; //(d.getTime() - this.timeOfLastAttQuery) > 0.5 * NO_QUERY_TIME_WINDOW_FOR_ENV_QUERY 
+  this.randomIthObjectForEnvQuery = floor(Math.random()*NumObjectsBetweenWindows)+1;
+  this.timeOfEnvQueryPlanning = d.getTime();
+  return(false);
+
+}
+
+if(d.getTime() - this.timeOfEnvQueryPlanning > this.randomIthObjectForEnvQuery*OBJECT_CREATION_INTERVAL - 200) //epsilon is 200 milliseconds
+{
+    this.timeOfEnvQueryPlanning = -1;
+    return(true);
+}
+  
+}
 setRecognizedType(assetid,assetUserSpecifiedType){
   var assetActualType = assetid[0];
   var i;
@@ -1054,19 +1098,41 @@ moveRandom(step){
         if (!this.gameOver) {
           var d = new Date();
           var boxEmpty = Array.isArray(this.boxed) && !this.boxed.length;
-          var askEnvQuery = boxEmpty && ((d.getTime() - this.timeOfLastEnvQuery) > ENV_QUERY_INTERVAL);
-          if (askEnvQuery) {
-            console.log("Asking Environment Query: " + (d.getTime() - this.timeOfLastEnvQuery).toString());
-            this.timeOfLastEnvQuery = d.getTime();
-          }
+          
+          
+          
+          
+          
+          // var askEnvQuery = boxEmpty && ((d.getTime() - this.timeOfLastEnvQuery) > ENV_QUERY_INTERVAL);
+          // if (askEnvQuery) {
+          //   console.log("Asking Environment Query: " + (d.getTime() - this.timeOfLastEnvQuery).toString());
+          //   this.timeOfLastEnvQuery = d.getTime();
+          // }
           
         
-          var askAttQuery = boxEmpty // If no query is currently active
-            && !askEnvQuery // if Env query is not selected
-            && this.askAttentionQueryBasedOnAttentionProbFunction() // if we need to ask attention query based on probablity
-            && (d.getTime() - this.timeOfLastEnvQuery) > 0.5 * NO_QUERY_TIME_WINDOW_FOR_ATT_QUERY // if we have crossed a time window since last env query
-            && (this.timeOfLastEnvQuery + ENV_QUERY_INTERVAL - d.getTime()) > 0.5 * NO_QUERY_TIME_WINDOW_FOR_ATT_QUERY; // if we are far away from time window of future env query
-          if (askAttQuery) {
+          // var askAttQuery = boxEmpty // If no query is currently active
+          //   && !askEnvQuery // if Env query is not selected
+          //   && this.askAttentionQueryBasedOnAttentionProbFunction() // if we need to ask attention query based on probablity
+          //   && (d.getTime() - this.timeOfLastEnvQuery) > 0.5 * NO_QUERY_TIME_WINDOW_FOR_ATT_QUERY // if we have crossed a time window since last env query
+          //   && (this.timeOfLastEnvQuery + ENV_QUERY_INTERVAL - d.getTime()) > 0.5 * NO_QUERY_TIME_WINDOW_FOR_ATT_QUERY; // if we are far away from time window of future env query
+          
+          var askAttQuery = boxEmpty && ((d.getTime() - this.timeOfLastAttQuery) > ATT_QUERY_INTERVAL);
+          
+          
+        
+          var askEnvQuery = boxEmpty // If no query is currently active
+            && !askAttQuery // if Env query is not selected
+            && this.askEnvironmentQueryBasedOnEnvironmentProbFunction() // if we need to ask env query based on probablity
+            && (d.getTime() - this.timeOfLastAttQuery) > 0.5 * NO_QUERY_TIME_WINDOW_FOR_ENV_QUERY // if we have crossed a time window since last env query
+            && (this.timeOfLastAttQuery + ATT_QUERY_INTERVAL - d.getTime()) > 0.5 * NO_QUERY_TIME_WINDOW_FOR_ENV_QUERY; // if we are far away from time window of future env query
+          
+          
+            if (askEnvQuery) {
+              console.log("Asking Environment Query: " + (d.getTime() - this.timeOfLastEnvQuery).toString());
+              this.timeOfLastEnvQuery = d.getTime();
+            }
+
+            if (askAttQuery) {
             console.log("Asking Attention Query:" + (d.getTime() - this.timeOfLastAttQuery).toString());
             this.timeOfLastAttQuery = d.getTime();
           }
@@ -1088,7 +1154,7 @@ moveRandom(step){
           }
           ctr++;
         }
-      }, 12000); //20000
+      }, OBJECT_CREATION_INTERVAL); //20000
 
       setInterval(() => {
         this.randomizesprite();
