@@ -89,6 +89,7 @@
     13.1 Display the score
     13.2 Should the user be able to disambiguate between attention and env query
 14. Take parameters as JSON file
+
 15. Check for display resolution
     #15.1 Give error if disp resolution doesn't meet the minimum criteria
     15.2 Make the error aesthetically nice
