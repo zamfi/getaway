@@ -93,7 +93,7 @@
 15. Check for display resolution
     #15.1 Give error if disp resolution doesn't meet the minimum criteria
     15.2 Make the error aesthetically nice
-
+    	
 
 16. Ready JS for mechanical turk
     - Get assignmentID, Hit ID, and worker ID from URL
@@ -102,5 +102,7 @@
 17. Video Instructions?
     - How does it work with mTurk
 
-
+18. Minor bugs
+    - Display problem when 100 - x shows as 100_ x
+    - Distractor query starts before start of game (see logged data to confirm)
 
