@@ -4,7 +4,7 @@ const lifeImg = new Image();
 //lifeImg.src = "./assets/images/turbo.png";
 const scale = 1.5;
 const redBox = new Image();
-redBox.src = "./assets/images/redbox.png";
+redBox.src = "static/assets/images/redbox.png";
 
 class Life {
   constructor(physics, imgSrc, marked, assetid,distance = -1) {

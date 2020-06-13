@@ -5,7 +5,7 @@ const rockImg = new Image();
 const redBox = new Image();
 const scale = 1.5;
 //rockImg.src = "./assets/images/rock.png";
-redBox.src = "./assets/images/redbox.png";
+redBox.src = "static/assets/images/redbox.png";
 class Obstacle {
   constructor(physics,imgSrc,marked,assetid, distance=-1) {
     this.physics = physics;

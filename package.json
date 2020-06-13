@@ -23,5 +23,6 @@
   "bugs": {
     "url": "https://github.com/le-s/getaway/issues"
   },
-  "homepage": "https://github.com/le-s/getaway#readme"
+  "homepage": "https://github.com/le-s/getaway#readme",
+  "keywords": []
 }

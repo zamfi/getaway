@@ -2,7 +2,7 @@ import Physics from './physics';
 import Sprite from './sprite';
 
 const carImg = new Image();
-carImg.src = './assets/images/car.png';
+carImg.src = 'static/assets/images/car.png';
 
 class Car {
   constructor(physics) {
