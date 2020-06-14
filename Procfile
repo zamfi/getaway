@@ -1,1 +1,1 @@
-web: python bin/herokuapp.py
+web: make heroku
