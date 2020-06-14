@@ -222,8 +222,8 @@ askEnvironmentQueryBasedOnEnvironmentProbFunction_deprecated() {
   // var thresh = 1-Math.exp(-1 * (d.getTime() - this.timeOfLastAttQuery) / EXP_PROB_TIME_CONSTANT);
 if(this.timeOfEnvQueryPlanning<0 && this.timeOfLastAttQuery>this.timeOfLastEnvQuery){ //If this is negative that means that we are yet to plan the environment query
 
-  var NumObjectsBetweenWindows = floor((ATT_QUERY_INTERVAL - 2*QUERY_TIMEOUT)/OBJECT_CREATION_INTERVAL) ; //(d.getTime() - this.timeOfLastAttQuery) > 0.5 * NO_QUERY_TIME_WINDOW_FOR_ENV_QUERY 
-  this.randomIthObjectForEnvQuery = floor(Math.random()*NumObjectsBetweenWindows)+1;
+  var NumObjectsBetweenWindows = Math.floor((ATT_QUERY_INTERVAL - 2*QUERY_TIMEOUT)/OBJECT_CREATION_INTERVAL) ; //(d.getTime() - this.timeOfLastAttQuery) > 0.5 * NO_QUERY_TIME_WINDOW_FOR_ENV_QUERY 
+  this.randomIthObjectForEnvQuery = Math.floor(Math.random()*NumObjectsBetweenWindows)+1;
   this.timeOfEnvQueryPlanning = d.getTime();
   return(false);
 
