@@ -4,7 +4,7 @@ const cashImg = new Image();
 //cashImg.src = "./assets/images/money.png";
 const scale = 1.5;
 const redBox = new Image();
-redBox.src = "statc/assets/images/redbox.png";
+redBox.src = "static/assets/images/redbox.png";
 class Cash {
   constructor(physics, imgSrc, marked, assetid, distance = -1) {
     

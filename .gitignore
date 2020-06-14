@@ -1,5 +1,4 @@
 /node_modules
-/main.js
 .venv/
 
 
@@ -20,7 +19,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
