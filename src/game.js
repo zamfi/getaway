@@ -784,7 +784,8 @@ setRecognizedType(assetid,assetUserSpecifiedType){
     }
     if (d.getTime() - this.startTime > GAME_TIME && !datalogWritten) {
       console.log(this.dataLog);
-      datalogWritten = true;
+      psiturk.recordTrialData('logs', this.dataLog);
+      datalogWritten = true;        
       //Code to write to a server data log file goes here
     }
   }
