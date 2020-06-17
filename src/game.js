@@ -28,16 +28,16 @@ const QUERYTYPE = Object.freeze({ "attention": "A", "environment": "E"});
 const MIN_BOX_DISTANCE_RATIO = 0.1; //It will get boxed at a maximum distance of 0.3*Canvas Height from start
 const MAX_BOX_DISTANCE_RATIO = 0.4; //It will get boxed at a maximum distance of 0.3*Canvas Height from start
 const NO_QUERY_TIME_WINDOW_FOR_ENV_QUERY = 3000;// in milliseconds
-const ATT_QUERY_INTERVAL = 10000; // in milliseconds
+const ATT_QUERY_INTERVAL = 19000; // in milliseconds
 const EXP_PROB_TIME_CONSTANT = 8500;// in milliseconds
 const QUERY_TIMEOUT = 4000; // in milliseconds 
-const OBJECT_CREATION_INTERVAL = 2500;
+const OBJECT_CREATION_INTERVAL = 10000;
 
 //Distractor task stuffs
 const CONTROLLER_SAMPLING_TIME = 500;// in milliseconds
 const DISTRACTOR_TASK_TIME = 5000; //Also the timeout for distractor tasl // in milliseconds
 const DISTRACTOR_TASK_PAUSE = 1500;// in milliseconds
-const GAME_TIME = 2 * 60000;// in milliseconds
+const GAME_TIME = 5 * 60000;// in milliseconds
 
 const MIN_RES_WIDTH = 1280;
 const MIN_RES_HEIGHT = 800;
@@ -222,8 +222,10 @@ askEnvironmentQueryBasedOnEnvironmentProbFunction_deprecated() {
   // var thresh = 1-Math.exp(-1 * (d.getTime() - this.timeOfLastAttQuery) / EXP_PROB_TIME_CONSTANT);
 if(this.timeOfEnvQueryPlanning<0 && this.timeOfLastAttQuery>this.timeOfLastEnvQuery){ //If this is negative that means that we are yet to plan the environment query
 
-  var NumObjectsBetweenWindows = floor((ATT_QUERY_INTERVAL - 2*QUERY_TIMEOUT)/OBJECT_CREATION_INTERVAL) ; //(d.getTime() - this.timeOfLastAttQuery) > 0.5 * NO_QUERY_TIME_WINDOW_FOR_ENV_QUERY 
-  this.randomIthObjectForEnvQuery = floor(Math.random()*NumObjectsBetweenWindows)+1;
+  var NumObjectsBetweenWindows = Math.floor((ATT_QUERY_INTERVAL - 2*QUERY_TIMEOUT)/OBJECT_CREATION_INTERVAL) ; //(d.getTime() - this.timeOfLastAttQuery) > 0.5 * NO_QUERY_TIME_WINDOW_FOR_ENV_QUERY 
+  console.log("Objects between attn queries ", NumObjectsBetweenWindows);
+  this.randomIthObjectForEnvQuery = Math.floor(Math.random()*NumObjectsBetweenWindows)+1;
+  console.log("Object Selected for env query ", this.randomIthObjectForEnvQuery);
   this.timeOfEnvQueryPlanning = d.getTime();
   return(false);
 
@@ -233,6 +235,11 @@ if(d.getTime() - this.timeOfEnvQueryPlanning > this.randomIthObjectForEnvQuery*O
 {
     this.timeOfEnvQueryPlanning = -1;
     return(true);
+}
+else
+{ 
+    console.log("Uncharted waters");
+    return(false);
 }
   
 }
@@ -277,7 +284,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
     this.num1 = this.num2 + this.num3;
     document.getElementById("num1").innerHTML = this.num1.toString();
     document.getElementById("num2").innerHTML = this.num2.toString();
-    document.getElementById("num3").innerHTML = "???";
+    document.getElementById("num3").innerHTML = "?";
     this.timeOfLastDistractorTask = d.getTime();
 
     this.logEvent(EVENTTYPE.NEW_DIST_QUERY, this.num1.toString() + "-" + this.num2.toString() + " = ???");
@@ -484,17 +491,17 @@ setRecognizedType(assetid,assetUserSpecifiedType){
         car.hitObstacle();
         car.makeRed();
         array.splice(array.indexOf(object), 1);
-        console.log("Before removing");
+        /*console.log("Before removing");
         console.log(boxed);
-        console.log(object.assetid);
+        console.log(object.assetid);*/
         if (boxed.indexOf(object.assetid) != -1) {
           boxed.splice(boxed.indexOf(object.assetid), 1);
           _this.logEvent(EVENTTYPE.ASSET_CAR_COLLIDED, object.assetid);
           
         }
-        console.log("After removing");
+        /*console.log("After removing");
         console.log(boxed);
-        console.log(object.assetid);
+        console.log(object.assetid);*/
       }
     }
     if (object instanceof Life) {
@@ -502,17 +509,17 @@ setRecognizedType(assetid,assetUserSpecifiedType){
         car.getLife();
         car.makeGreen();
         array.splice(array.indexOf(object), 1);
-        console.log("Before removing");
+        /*console.log("Before removing");
         console.log(boxed);
-        console.log(object.assetid);
+        console.log(object.assetid);*/
         if (boxed.indexOf(object.assetid) != -1) {
           boxed.splice(boxed.indexOf(object.assetid), 1);
           _this.logEvent(EVENTTYPE.ASSET_CAR_COLLIDED, object.assetid);
           
         }
-        console.log("After removing");
+        /*console.log("After removing");
         console.log(boxed);
-        console.log(object.assetid);
+        console.log(object.assetid);*/
       }
     }
     if (object instanceof Cash) {
@@ -520,17 +527,17 @@ setRecognizedType(assetid,assetUserSpecifiedType){
         assets.road.score += 100;
         assets.road.makeGreen();
         array.splice(array.indexOf(object), 1);
-        console.log("Before removing");
+        /*console.log("Before removing");
         console.log(boxed);
-        console.log(object.assetid);
+        console.log(object.assetid);*/
         if (boxed.indexOf(object.assetid) != -1) {
           boxed.splice(boxed.indexOf(object.assetid), 1);
           _this.logEvent(EVENTTYPE.ASSET_CAR_COLLIDED, object.assetid);
           
         }
-        console.log("After removing");
+        /*console.log("After removing");
         console.log(boxed);
-        console.log(object.assetid);
+        console.log(object.assetid);*/
       }
     }
   }
@@ -1119,13 +1126,15 @@ moveRandom(step){
           var askAttQuery = boxEmpty && ((d.getTime() - this.timeOfLastAttQuery) > ATT_QUERY_INTERVAL);
           
           
-        
           var askEnvQuery = boxEmpty // If no query is currently active
             && !askAttQuery // if Env query is not selected
             && this.askEnvironmentQueryBasedOnEnvironmentProbFunction() // if we need to ask env query based on probablity
-            && (d.getTime() - this.timeOfLastAttQuery) > 0.5 * NO_QUERY_TIME_WINDOW_FOR_ENV_QUERY // if we have crossed a time window since last env query
             && (this.timeOfLastAttQuery + ATT_QUERY_INTERVAL - d.getTime()) > 0.5 * NO_QUERY_TIME_WINDOW_FOR_ENV_QUERY; // if we are far away from time window of future env query
-          
+            // YP: Edited this code to try and mane att queries periodic
+            /*&& (d.getTime() - this.timeOfLastAttQuery) > 0.5 * NO_QUERY_TIME_WINDOW_FOR_ENV_QUERY // if we have crossed a time window since last env query
+            && (this.timeOfLastAttQuery + ATT_QUERY_INTERVAL - d.getTime()) > 0.5 * NO_QUERY_TIME_WINDOW_FOR_ENV_QUERY; // if we are far away from time window of future env query
+            */
+           console.log("Checking if env query: ", askEnvQuery);
           
             if (askEnvQuery) {
               console.log("Asking Environment Query: " + (d.getTime() - this.timeOfLastEnvQuery).toString());
