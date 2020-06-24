@@ -21,7 +21,7 @@
                         #else if asset.boxed is true, then set asset.recognizedType to undecided isUnrecognized
                 #7.3.6.2 set asset.recognizedType to user input value
         #7.3.7 Set Timeout distance, amd mark incorrect and red
-        7.3.8 What happens when user enters wrong input to attention query
+        #7.3.8 What happens when user enters wrong input to attention query
     7.4 Bar for time remaining
         #7.4.1 Vary boxing distances (aka timeout for system recognition failure) only for attention query 
                 #Other siwse fixed distance (1/3 down) - 3 car lengths?
@@ -31,7 +31,7 @@
             #7.4.4.1 Use QUERY_TIMEOUT(4000ms) to decide this
             #7.4.4.2 Update a QUERY_TIMEOUT_FLAG
         #7.4.5 isBoxed is a misnomer - 
-        7.4.6 Make time bar aesthetically nice
+        7.4.6 Make time bar aesthetically nice (Make Time font bigger)
     #7.5 Separate pane for the interface - look at the amendment document
     #7.6 Move car all way down
     #7.7 Give feedback for keyboard key presses - Q,W,E
@@ -44,7 +44,8 @@
         #8.3.2 Should not be posed around a time window of the Env. query
     8.4 Define probablity time constants and other coefficients and time interval parameters and randomize timings
         8.4.1 Use pilots for tuning this right
-    8.5 Have a query type array
+    #8.5 Have a current query Type variable
+    -----8.6 Have a query type array--------
     
 #9. Car controller for driving this - PID
     #9.1 Controller triggered upon human identification for unknown objects
@@ -61,7 +62,7 @@
         #10.1.2 Green and Red hold for distractor panel for correct and wrong answer
         #10.1.3 Set distractor task pause between tasks
         #10.1.4 Timer for this
-        10.1.5 User instructions for distractor tasks
+        10.1.5 User instructions for distractor tasks and everything else - ERIN
 
 11. Data collection
     #11.1 Number of obstacles, points and extra life
@@ -85,7 +86,7 @@
     #12.1 - Time-based (Game ends after a specific time)
     12.2 Stop controller
     12.3 Write log to file
-13. Random scoring function
+13. Random  scoring function
     13.1 Display the score
     13.2 Should the user be able to disambiguate between attention and env query
 14. Take parameters as JSON file
@@ -93,7 +94,7 @@
 15. Check for display resolution
     #15.1 Give error if disp resolution doesn't meet the minimum criteria
     15.2 Make the error aesthetically nice
-    	
+
 
 16. Ready JS for mechanical turk
     - Get assignmentID, Hit ID, and worker ID from URL
@@ -102,7 +103,5 @@
 17. Video Instructions?
     - How does it work with mTurk
 
-18. Minor bugs
-    - Display problem when 100 - x shows as 100_ x
-    - Distractor query starts before start of game (see logged data to confirm)
+
 

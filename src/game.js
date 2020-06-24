@@ -25,13 +25,15 @@ const obj_buf = 75+40; //constant for when object goes behind car (1/2 of car le
 const OBJECTTYPE = Object.freeze({ "obstacle": "O", "cash": "C", "life": "L" });
 const QUERYTYPE = Object.freeze({ "attention": "A", "environment": "E"});
 
-const MIN_BOX_DISTANCE_RATIO = 0.1; //It will get boxed at a maximum distance of 0.3*Canvas Height from start
-const MAX_BOX_DISTANCE_RATIO = 0.4; //It will get boxed at a maximum distance of 0.3*Canvas Height from start
+const MIN_BOX_DISTANCE_RATIO = 0.3; //It will get boxed at a maximum distance of 0.3*Canvas Height from start
+const MAX_BOX_DISTANCE_RATIO = 0.3; //It will get boxed at a maximum distance of 0.3*Canvas Height from start
+
 const NO_QUERY_TIME_WINDOW_FOR_ENV_QUERY = 3000;// in milliseconds
 const ATT_QUERY_INTERVAL = 19000; // in milliseconds
 const EXP_PROB_TIME_CONSTANT = 8500;// in milliseconds
 const QUERY_TIMEOUT = 4000; // in milliseconds 
 const OBJECT_CREATION_INTERVAL = 10000;
+const CONTROLLER_REACTION_TIME = 2000;
 
 //Distractor task stuffs
 const CONTROLLER_SAMPLING_TIME = 500;// in milliseconds
@@ -224,14 +226,16 @@ if(this.timeOfEnvQueryPlanning<0 && this.timeOfLastAttQuery>this.timeOfLastEnvQu
 
   var NumObjectsBetweenWindows = Math.floor((ATT_QUERY_INTERVAL - 2*QUERY_TIMEOUT)/OBJECT_CREATION_INTERVAL) ; //(d.getTime() - this.timeOfLastAttQuery) > 0.5 * NO_QUERY_TIME_WINDOW_FOR_ENV_QUERY 
   console.log("Objects between attn queries ", NumObjectsBetweenWindows);
-  this.randomIthObjectForEnvQuery = Math.floor(Math.random()*NumObjectsBetweenWindows)+1;
+  this.randomIthObjectForEnvQuery = Math.floor(Math.random() * NumObjectsBetweenWindows)+1;
   console.log("Object Selected for env query ", this.randomIthObjectForEnvQuery);
-  this.timeOfEnvQueryPlanning = d.getTime();
-  return(false);
+  this.timeOfEnvQueryPlanning = this.timeOfLastAttQuery;
+  // this.timeOfEnvQueryPlanning = d.getTime();
+  // return(false);
 
 }
 
-if(d.getTime() - this.timeOfEnvQueryPlanning > this.randomIthObjectForEnvQuery*OBJECT_CREATION_INTERVAL - 200) //epsilon is 200 milliseconds
+   if (d.getTime() - this.timeOfEnvQueryPlanning > this.randomIthObjectForEnvQuery * OBJECT_CREATION_INTERVAL - 500 ||
+     d.getTime() - this.timeOfEnvQueryPlanning < this.randomIthObjectForEnvQuery * OBJECT_CREATION_INTERVAL + 500) //epsilon is 200 milliseconds
 {
     this.timeOfEnvQueryPlanning = -1;
     return(true);
@@ -446,8 +450,9 @@ setRecognizedType(assetid,assetUserSpecifiedType){
       if(speed!=null){
         var d = new Date();
         
-        //speed = (object_y - prev_object_y) / (0.001*(curr_time - prev_time));
-        speed = 24;
+        // speed = (object_y - prev_object_y) / (0.001 * (curr_time - prev_time));
+        // console.log("Speed is : " + speed);
+        speed = 60; // TODO_ERIN: Automated code commented above. But it has jitter. Need to tie this to physics.speed
         max_time = car_y /speed;
         var time_bar_length = ((car_y) - (object_y+object_height))/speed;
         // console.log("Time bar length: "+Math.floor(time_bar_length) + ", Speed: "+speed
@@ -458,10 +463,10 @@ setRecognizedType(assetid,assetUserSpecifiedType){
         prev_object_y = object_y;
         prev_time = curr_time;
         var elem = document.getElementById("myBar");
-        elem.style.width = (((time_bar_length-0.001*QUERY_TIMEOUT)/max_time)*100) + "%";
-        document.getElementById("myBarTime").innerHTML = `${Math.floor((time_bar_length-0.001*QUERY_TIMEOUT)*10)/10+"s"}`;
+        elem.style.width = (((time_bar_length-0.001*CONTROLLER_REACTION_TIME)/max_time)*100) + "%";
+        document.getElementById("myBarTime").innerHTML = `${Math.floor((time_bar_length - 0.001 * CONTROLLER_REACTION_TIME)*10)/10+"s"}`;
         //console.log(Math.floor(time_bar_length*10)/10+"s");
-        if (time_bar_length < 0.001*QUERY_TIMEOUT && time_bar_length > 0.1
+        if (time_bar_length < 0.001 * CONTROLLER_REACTION_TIME && time_bar_length > 0.1
           && !this.queryTimeElapsed
           && !this.queryUserResponded
         ) {
