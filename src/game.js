@@ -112,7 +112,7 @@ class Game {
     this.obstacleImgLists = [];
     this.numImgs = 16;
     this.assetidCounter = -1;
-    this.activeResponse = false;
+    this.activeResponse = false; // For the main task
     this.stopBlink = false;
     this.queryType = null;
     this.queryTimeElapsed = false;
@@ -124,9 +124,10 @@ class Game {
     this.timeOfLastEnvQuery = d.getTime();
     this.timeOfLastAttQuery = d.getTime();
     this.timeOfLastDistractorTask = d.getTime();
+   
     this.timeOfEnvQueryPlanning = -1; //Time at which env query's random interval duration was defined
     this.randomIthObjectForEnvQuery = 100000000; //Some high value //Pick the ith object starting this object creation cycle (0 this one)
-    this.objectCounterForEnvQuery = -1;
+    
     this.startTime = GAME_TIME*2; // Some high value greater than game time
     this.num2 = 0; // An integer between 0 to 99
     this.num3 = 0; // An integer between 0 to 9
@@ -1111,8 +1112,7 @@ moveRandom(step){
           var d = new Date();
           var boxEmpty = Array.isArray(this.boxed) && !this.boxed.length;
           
-          
-          
+                
           
           
           // var askEnvQuery = boxEmpty && ((d.getTime() - this.timeOfLastEnvQuery) > ENV_QUERY_INTERVAL);
@@ -1132,9 +1132,9 @@ moveRandom(step){
           
           
           var askEnvQuery = boxEmpty // If no query is currently active
-            && !askAttQuery // if Env query is not selected
+            && !askAttQuery // if Att query is not selected
             && this.askEnvironmentQueryBasedOnEnvironmentProbFunction() // if we need to ask env query based on probablity
-            && (this.timeOfLastAttQuery + ATT_QUERY_INTERVAL - d.getTime()) > 0.5 * NO_QUERY_TIME_WINDOW_FOR_ENV_QUERY; // if we are far away from time window of future env query
+            && (this.timeOfLastAttQuery + ATT_QUERY_INTERVAL - d.getTime()) > 0.5 * NO_QUERY_TIME_WINDOW_FOR_ENV_QUERY; // if we are far away from time window of future env query ?? ERIN_TODO: Do we need this?
             // YP: Edited this code to try and mane att queries periodic
             /*&& (d.getTime() - this.timeOfLastAttQuery) > 0.5 * NO_QUERY_TIME_WINDOW_FOR_ENV_QUERY // if we have crossed a time window since last env query
             && (this.timeOfLastAttQuery + ATT_QUERY_INTERVAL - d.getTime()) > 0.5 * NO_QUERY_TIME_WINDOW_FOR_ENV_QUERY; // if we are far away from time window of future env query
@@ -1242,6 +1242,7 @@ moveRandom(step){
       document.getElementById("slow").innerHTML = `You need a minimum display resolution of 1280x800 to take part in this study`;
       document.getElementById("how").style.visibility = "hidden";
       document.getElementById("welcome").style.display = null;
+      //this.LogIn the file (error) //TODO_ERIN
     }
   }
 

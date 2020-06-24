@@ -62,7 +62,8 @@
         #10.1.2 Green and Red hold for distractor panel for correct and wrong answer
         #10.1.3 Set distractor task pause between tasks
         #10.1.4 Timer for this
-        10.1.5 User instructions for distractor tasks and everything else - ERIN
+        10.1 .5 User instructions for distractor tasks and everything else - ERIN
+        10.1.6 Control ON time and OFF time for idstractor task
 
 11. Data collection
     #11.1 Number of obstacles, points and extra life
@@ -86,6 +87,7 @@
     #12.1 - Time-based (Game ends after a specific time)
     12.2 Stop controller
     12.3 Write log to file
+    12.4 add numbers to Eventype variables instead of string (very much optional)
 13. Random  scoring function
     13.1 Display the score
     13.2 Should the user be able to disambiguate between attention and env query
@@ -94,6 +96,7 @@
 15. Check for display resolution
     #15.1 Give error if disp resolution doesn't meet the minimum criteria
     15.2 Make the error aesthetically nice
+    15.3 Log the error
 
 
 16. Ready JS for mechanical turk

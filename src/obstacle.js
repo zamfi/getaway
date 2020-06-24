@@ -5,7 +5,7 @@ const rockImg = new Image();
 const redBox = new Image();
 const scale = 1.5;
 //rockImg.src = "./assets/images/rock.png";
-redBox.src = "./assets/images/redbox.png";
+redBox.src = "./assets/images/redbox.png"; //TODO_ERIN: Convert it to a bluebox
 class Obstacle {
   constructor(physics,imgSrc,marked,assetid, distance=-1) {
     this.physics = physics;
