@@ -1,3 +1,9 @@
+/********************************************
+|                                           |
+|            assets.js                      |
+|                                           |
+********************************************/
+
 import Car from './car';
 import Road from './road';
 import Physics from './physics';

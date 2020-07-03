@@ -1,3 +1,9 @@
+/********************************************
+|                                           |
+|            road.js                        |
+|                                           |
+********************************************/
+
 import Physics from "./physics";
 import Sprite from "./sprite";
 
@@ -16,6 +22,7 @@ class Road {
 
   move() {
     this.physics.dDown = this.physics.speed;
+    console.log("Road speed: " + this.physics.speed)
   }
 
   addScore() {

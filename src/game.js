@@ -1,3 +1,9 @@
+/********************************************
+|                                           |
+|            game.js                        |
+|                                           |
+********************************************/
+
 // import GameView from './game_view.js';
 // import Car from './car.js';
 // import { request } from 'http';
@@ -405,7 +411,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
       var object_height = null;
       const car_y = this.assets.car.physics.y;
       const car_height = this.assets.car.physics.height ? this.assets.car.physics.height : this.assets.car.sprite.height*this.assets.car.sprite.height_scale;
-      var speed = 0;
+      var speed = 0; 
       var curr_time;
       if(objectType == 0){
         object_height = this.cash[0].physics.height ? this.cash[0].physics.height : this.cash[0].sprite.height*this.cash[0].sprite.height_scale;
@@ -422,6 +428,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
         object_y = this.life[0].physics.y;
         curr_time = (new Date()).getTime();
       }
+
 
       
       if(prev_time == null)
@@ -451,9 +458,12 @@ setRecognizedType(assetid,assetUserSpecifiedType){
       if(speed!=null){
         var d = new Date();
         
-        // speed = (object_y - prev_object_y) / (0.001 * (curr_time - prev_time));
-        // console.log("Speed is : " + speed);
-        speed = 60; // TODO_ERIN: Automated code commented above. But it has jitter. Need to tie this to physics.speed
+        this.assets.car.physics.speed = (object_y - prev_object_y) / (0.001 * (curr_time - prev_time));
+        //Math in js is floating
+        var speed = this.assets.car.physics.speed; // TODO_ERIN: Automated code commented above. But it has jitter. Need to tie this to physics.speed
+        //speed = (((object_y - prev_object_y)*1000) / (curr_time - prev_time));
+        console.log("Speed is : " + speed);
+        
         max_time = car_y /speed;
         var time_bar_length = ((car_y) - (object_y+object_height))/speed;
         // console.log("Time bar length: "+Math.floor(time_bar_length) + ", Speed: "+speed
