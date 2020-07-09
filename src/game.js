@@ -40,6 +40,7 @@ const EXP_PROB_TIME_CONSTANT = 8500;// in milliseconds
 const QUERY_TIMEOUT = 4000; // in milliseconds 
 const OBJECT_CREATION_INTERVAL = 10000;
 const CONTROLLER_REACTION_TIME = 2000;
+const TIMEBAR_INTERVAL_TIME = 50;
 
 //Distractor task stuffs
 const CONTROLLER_SAMPLING_TIME = 500;// in milliseconds
@@ -407,6 +408,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
 
       var objectType = this.closestObject(); // 0: cash, 1: rock, 2: life, 3: no spawned object ahead
 
+      var object;
       var object_y = null;
       var object_height = null;
       const car_y = this.assets.car.physics.y;
@@ -414,21 +416,20 @@ setRecognizedType(assetid,assetUserSpecifiedType){
       var speed = 0; 
       var curr_time;
       if(objectType == 0){
-        object_height = this.cash[0].physics.height ? this.cash[0].physics.height : this.cash[0].sprite.height*this.cash[0].sprite.height_scale;
-        object_y = this.cash[0].physics.y;
+        object = this.cash[0];
         curr_time = (new Date()).getTime();
       }
       else if(objectType == 1){
-        object_height = this.rocks[0].physics.height ? this.rocks[0].physics.height : this.rocks[0].sprite.height*this.rocks[0].sprite.height_scale;
-        object_y = this.rocks[0].physics.y;
-        curr_time = (new Date()).getTime();
+        object = this.rocks[0];
       }
       else if(objectType == 2){
-        object_height = this.life[0].physics.height ? this.life[0].physics.height : this.life[0].sprite.height*this.life[0].sprite.height_scale;
-        object_y = this.life[0].physics.y;
+        object = this.life[0];
+      }
+      if (object) {
+        object_height = object.physics.height ? object.physics.height : object.sprite.height*object.sprite.height_scale;
+        object_y = object.physics.y;
         curr_time = (new Date()).getTime();
       }
-
 
       
       if(prev_time == null)
@@ -458,7 +459,7 @@ setRecognizedType(assetid,assetUserSpecifiedType){
       if(speed!=null){
         var d = new Date();
         
-        this.assets.car.physics.speed = (object_y - prev_object_y) / (0.001 * (curr_time - prev_time));
+        this.assets.car.physics.speed = (object.physics.dy()) / (0.001 * (TIMEBAR_INTERVAL_TIME));
         //Math in js is floating
         var speed = this.assets.car.physics.speed; // TODO_ERIN: Automated code commented above. But it has jitter. Need to tie this to physics.speed
         //speed = (((object_y - prev_object_y)*1000) / (curr_time - prev_time));
@@ -1186,10 +1187,10 @@ moveRandom(step){
     
       setInterval(() => {
         this.updateTimeBar();
-      }, 50);
+      }, TIMEBAR_INTERVAL_TIME);
       setInterval(() => {
         this.updateDistractorTimeBar();
-      }, 50);
+      }, TIMEBAR_INTERVAL_TIME);
 
 
       // setInterval(() => {
